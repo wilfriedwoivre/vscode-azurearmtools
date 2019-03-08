@@ -7,7 +7,7 @@
 // tslint:disable:promise-function-async
 
 import * as assert from "assert";
-import { DeploymentTemplate, Histogram, IncorrectArgumentsCountIssue, Json, Language, ParameterDefinition, Reference, ReferenceInVariableDefinitionJSONVisitor, UnrecognizedFunctionIssue } from "../extension.bundle";
+import { DeploymentTemplate, FunctionCallContext, FunctionCallContextCheckerJSONVisitor, Histogram, IncorrectArgumentsCountIssue, InvalidFunctionContextIssue, Json, Language, ParameterDefinition, Reference, UnrecognizedFunctionIssue } from "../extension.bundle";
 
 suite("DeploymentTemplate", () => {
     suite("constructor(string)", () => {
@@ -253,7 +253,17 @@ suite("DeploymentTemplate", () => {
             return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new Language.Issue(new Language.Span(24, 9), "reference() cannot be invoked inside of a variable definition.")]
+                    [new InvalidFunctionContextIssue(new Language.Span(24, 9), "reference() cannot be invoked inside of a variable definition.")]
+                );
+            });
+        });
+
+        test("with reference() call in variable definition, upper case", () => {
+            const dt = new DeploymentTemplate(`{ "variables": { "a": "[Reference('test')]" } }`, "id");
+            return dt.errors.then((errors: Language.Issue[]) => {
+                assert.deepStrictEqual(
+                    errors,
+                    [new InvalidFunctionContextIssue(new Language.Span(24, 9), "reference() cannot be invoked inside of a variable definition.")]
                 );
             });
         });
@@ -263,7 +273,85 @@ suite("DeploymentTemplate", () => {
             return dt.errors.then((errors: Language.Issue[]) => {
                 assert.deepStrictEqual(
                     errors,
-                    [new Language.Issue(new Language.Span(31, 9), "reference() cannot be invoked inside of a variable definition.")]);
+                    [new InvalidFunctionContextIssue(new Language.Span(31, 9), "reference() cannot be invoked inside of a variable definition.")]
+                );
+            });
+        });
+
+        test("with newGuid() call in parameter definition's defaultValue (valid)", () => {
+            const dt = new DeploymentTemplate(
+                `{
+                    "parameters": {
+                        "guid": {
+                            "type": "string",
+                            "defaultValue": "[newGuid()]"
+                        }
+                    }
+                }`,
+                "id");
+            return dt.errors.then((errors: Language.Issue[]) => {
+                assert.deepStrictEqual(
+                    errors,
+                    []
+                );
+            });
+        });
+
+        test("with newGuid() call in parameter definition's maxValue", () => {
+            const dt = new DeploymentTemplate(
+                `{
+                    "parameters": {
+                        "guid": {
+                            "type": "string",
+                            "maxValue": "[newGuid()]"
+                        }
+                    }
+                }`,
+                "id");
+            return dt.errors.then((errors: Language.Issue[]) => {
+                assert.deepStrictEqual(
+                    errors,
+                    [new InvalidFunctionContextIssue(new Language.Span(24, 9), "newGuid() can only be invoked inside of a parameter definition's defaultValue.")]
+                );
+            });
+        });
+
+        test("with newGuid() call in variable definition", () => {
+            const dt = new DeploymentTemplate("{ 'name': '[variables(\"test\")]' }", "id");
+            return dt.errors.then((errors: Language.Issue[]) => {
+                assert.deepStrictEqual(
+                    errors,
+                    [new InvalidFunctionContextIssue(new Language.Span(24, 9), "newGuid() can only be invoked inside of a parameter definition's defaultValue.")]
+                );
+            });
+        });
+
+        test("with utcnow() call in parameter definition's defaultValue", () => {
+            const dt = new DeploymentTemplate(
+                `{
+                    "parameters": {
+                        "guid": {
+                            "type": "string",
+                            "defaultValue": "[utcnow('2015-03-15T13:27:36Z')]"
+                        }
+                    }
+                }`,
+                "id");
+            return dt.errors.then((errors: Language.Issue[]) => {
+                assert.deepStrictEqual(
+                    errors,
+                    [new InvalidFunctionContextIssue(new Language.Span(24, 9), "utcNow() can only be invoked inside of a parameter definition's defaultValue.")]
+                );
+            });
+        });
+
+        test("with utcnow() call in variable definition", () => {
+            const dt = new DeploymentTemplate("{ 'name': '\"[UTCNOW('2015-03-15T13:27:36Z')]\"]' }", "id");
+            return dt.errors.then((errors: Language.Issue[]) => {
+                assert.deepStrictEqual(
+                    errors,
+                    [new InvalidFunctionContextIssue(new Language.Span(24, 9), "utcNow() can only be invoked inside of a parameter definition's defaultValue.")]
+                );
             });
         });
 
@@ -890,64 +978,64 @@ suite("DeploymentTemplate", () => {
     });
 });
 
-suite("ReferenceInVariableDefinitionJSONVisitor", () => {
+suite("Reference call not allowed inside variable definitions", () => {
     suite("constructor(DeploymentTemplate)", () => {
         test("with null", () => {
-            assert.throws(() => { new ReferenceInVariableDefinitionJSONVisitor(null); });
+            assert.throws(() => { new FunctionCallContextCheckerJSONVisitor(null, FunctionCallContext.InVarDefinition); });
         });
 
         test("with undefined", () => {
-            assert.throws(() => { new ReferenceInVariableDefinitionJSONVisitor(undefined); });
+            assert.throws(() => { new FunctionCallContextCheckerJSONVisitor(undefined, FunctionCallContext.InVarDefinition); });
         });
 
         test("with deploymentTemplate", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, "id");
-            const visitor = new ReferenceInVariableDefinitionJSONVisitor(dt);
-            assert.deepStrictEqual(visitor.referenceSpans, []);
+            const visitor = new FunctionCallContextCheckerJSONVisitor(dt, FunctionCallContext.InVarDefinition);
+            assert.deepStrictEqual(visitor.errors.map(e => e.span), []);
         });
     });
 
     suite("visitStringValue(Json.StringValue)", () => {
         test("with null", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, "id");
-            const visitor = new ReferenceInVariableDefinitionJSONVisitor(dt);
+            const visitor = new FunctionCallContextCheckerJSONVisitor(dt, FunctionCallContext.InVarDefinition);
             assert.throws(() => { visitor.visitStringValue(null); });
         });
 
         test("with undefined", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, "id");
-            const visitor = new ReferenceInVariableDefinitionJSONVisitor(dt);
+            const visitor = new FunctionCallContextCheckerJSONVisitor(dt, FunctionCallContext.InVarDefinition);
             assert.throws(() => { visitor.visitStringValue(undefined); });
         });
 
         test("with non-TLE string", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, "id");
-            const visitor = new ReferenceInVariableDefinitionJSONVisitor(dt);
+            const visitor = new FunctionCallContextCheckerJSONVisitor(dt, FunctionCallContext.InVarDefinition);
             const variables: Json.StringValue = Json.asObjectValue(dt.jsonParseResult.value).properties[0].name;
             visitor.visitStringValue(variables);
-            assert.deepStrictEqual(visitor.referenceSpans, []);
+            assert.deepStrictEqual(visitor.errors.map(e => e.span), []);
         });
 
         test("with TLE string with reference() call", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[reference('test')]" } }`, "id");
-            const visitor = new ReferenceInVariableDefinitionJSONVisitor(dt);
+            const visitor = new FunctionCallContextCheckerJSONVisitor(dt, FunctionCallContext.InVarDefinition);
             const dtObject: Json.ObjectValue = Json.asObjectValue(dt.jsonParseResult.value);
             const variablesObject: Json.ObjectValue = Json.asObjectValue(dtObject.getPropertyValue("variables"));
             const tle: Json.StringValue = Json.asStringValue(variablesObject.getPropertyValue("a"));
 
             visitor.visitStringValue(tle);
-            assert.deepStrictEqual(visitor.referenceSpans, [new Language.Span(24, 9)]);
+            assert.deepStrictEqual(visitor.errors.map(e => e.span), [new Language.Span(24, 9)]);
         });
 
         test("with TLE string with reference() call inside concat() call", () => {
             const dt = new DeploymentTemplate(`{ "variables": { "a": "[concat(reference('test'))]" } }`, "id");
-            const visitor = new ReferenceInVariableDefinitionJSONVisitor(dt);
+            const visitor = new FunctionCallContextCheckerJSONVisitor(dt, FunctionCallContext.InVarDefinition);
             const dtObject: Json.ObjectValue = Json.asObjectValue(dt.jsonParseResult.value);
             const variablesObject: Json.ObjectValue = Json.asObjectValue(dtObject.getPropertyValue("variables"));
             const tle: Json.StringValue = Json.asStringValue(variablesObject.getPropertyValue("a"));
 
             visitor.visitStringValue(tle);
-            assert.deepStrictEqual(visitor.referenceSpans, [new Language.Span(31, 9)]);
+            assert.deepStrictEqual(visitor.errors.map(e => e.span), [new Language.Span(31, 9)]);
         });
     });
 });

@@ -8,7 +8,6 @@
 // tslint:disable:cyclomatic-complexity // Grandfathered in
 
 import * as assert from "assert";
-
 import * as language from "./Language";
 import * as basic from "./Tokenizer";
 import * as utilities from "./Utilities";
@@ -565,6 +564,11 @@ export class ObjectValue extends Value {
     /**
      * Get the property value that is at the chain of properties in the provided property name
      * stack. If the provided property name stack is empty, then return this value.
+     *
+     * This handles scenarios like this:
+     *   "variables": {
+     * 		"abc": {"one": 1, "two": 2},
+     *      "wadcfgx": "[variables('abc').<<< INTELLISENSE HERE]",
      */
     public getPropertyValueFromStack(propertyNameStack: string[]): Value {
         let result: Value = this;

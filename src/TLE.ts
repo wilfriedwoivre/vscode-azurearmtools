@@ -9,19 +9,17 @@
 // tslint:disable:max-classes-per-file // Grandfathered in
 
 import * as assert from "assert";
-
 import * as assets from "./AzureRMAssets";
-import * as Json from "./JSON";
-import * as language from "./Language";
-import * as Reference from "./Reference";
-import * as basic from "./Tokenizer";
-import * as Utilities from "./Utilities";
-
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { Histogram } from "./Histogram";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
+import * as Json from "./JSON";
+import * as language from "./Language";
 import { PositionContext } from "./PositionContext";
+import * as Reference from "./Reference";
+import * as basic from "./Tokenizer";
 import { UnrecognizedFunctionIssue } from "./UnrecognizedFunctionIssue";
+import * as Utilities from "./Utilities";
 
 export function asStringValue(value: Value): StringValue {
     return value instanceof StringValue ? value : null;

@@ -3,18 +3,16 @@
 // ----------------------------------------------------------------------------
 
 import * as assert from "assert";
-
+import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
+import { FunctionCallContext, FunctionCallContextCheckerJSONVisitor } from "./FunctionCallContextCheckerJSONVisitor";
+import { Histogram } from "./Histogram";
 import * as Json from "./JSON";
 import * as language from "./Language";
+import { ParameterDefinition } from "./ParameterDefinition";
+import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import * as TLE from "./TLE";
 import * as Utilities from "./Utilities";
-
-import { AzureRMAssets, FunctionMetadata, FunctionsMetadata } from "./AzureRMAssets";
-import { Histogram } from "./Histogram";
-import { ParameterDefinition } from "./ParameterDefinition";
-import { PositionContext } from "./PositionContext";
-import { Stopwatch } from "./Stopwatch";
 
 export class DeploymentTemplate {
     private _jsonParseResult: Json.ParseResult;
@@ -150,20 +148,7 @@ export class DeploymentTemplate {
                         }
                     }
 
-                    if (this.jsonParseResult) {
-                        const deploymentTemplateObject: Json.ObjectValue = Json.asObjectValue(this.jsonParseResult.value);
-                        if (deploymentTemplateObject) {
-                            const variablesObject: Json.ObjectValue = Json.asObjectValue(deploymentTemplateObject.getPropertyValue("variables"));
-                            if (variablesObject) {
-                                const referenceInVariablesFinder = new ReferenceInVariableDefinitionJSONVisitor(this);
-                                variablesObject.accept(referenceInVariablesFinder);
-
-                                for (const referenceSpan of referenceInVariablesFinder.referenceSpans) {
-                                    parseErrors.push(new language.Issue(referenceSpan, "reference() cannot be invoked inside of a variable definition."));
-                                }
-                            }
-                        }
-                    }
+                    this.checkVariableCallContexts(parseErrors);
 
                     resolve(parseErrors);
                 } catch (err) {
@@ -173,6 +158,46 @@ export class DeploymentTemplate {
         }
 
         return this._errors;
+    }
+
+    private checkVariableCallContexts(parseErrors: language.Issue[]): void {
+        if (this.jsonParseResult) {
+            const deploymentTemplateObject: Json.ObjectValue = Json.asObjectValue(this.jsonParseResult.value);
+            if (deploymentTemplateObject) {
+                // Check function calls inside variable definitions
+                const variablesObject: Json.ObjectValue = Json.asObjectValue(deploymentTemplateObject.getPropertyValue("variables"));
+                if (variablesObject) {
+                    const functionCallContextChecker = new FunctionCallContextCheckerJSONVisitor(this, FunctionCallContext.InVarDefinition);
+                    variablesObject.accept(functionCallContextChecker);
+
+                    for (const error of functionCallContextChecker.errors) {
+                        parseErrors.push(error);
+                    }
+                }
+
+                // Check function calls inside parameter definitions
+                const parametersObject: Json.ObjectValue = Json.asObjectValue(deploymentTemplateObject.getPropertyValue("parameters"));
+                if (parametersObject) {
+                    for (let paramObject of parametersObject.properties) {
+                        let properties = paramObject.value && Json.asObjectValue(paramObject.value);
+                        if (properties) {
+                            for (let property of properties.properties) {
+                                let name = property.name && Json.asStringValue(property.name) && Json.asStringValue(property.name).toString();
+                                let value = property.value && Json.asStringValue(property.value);
+
+                                let callContext = name.toLowerCase() === 'defaultValue' ? FunctionCallContext.InParamDefinitionDefValue : FunctionCallContext.InParamDefinitionNotDefValue;
+                                const functionCallContextChecker = new FunctionCallContextCheckerJSONVisitor(this, callContext);
+                                value.accept(functionCallContextChecker);
+
+                                for (const error of functionCallContextChecker.errors) {
+                                    parseErrors.push(error);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public get warnings(): language.Issue[] {
@@ -452,50 +477,5 @@ export class DeploymentTemplate {
         }
 
         return result;
-    }
-}
-
-export class ReferenceInVariableDefinitionJSONVisitor extends Json.Visitor {
-    private _referenceSpans: language.Span[] = [];
-
-    constructor(private _deploymentTemplate: DeploymentTemplate) {
-        super();
-
-        assert(_deploymentTemplate);
-    }
-
-    public get referenceSpans(): language.Span[] {
-        return this._referenceSpans;
-    }
-
-    public visitStringValue(value: Json.StringValue): void {
-        assert(value, "Cannot visit a null or undefined Json.StringValue.");
-
-        const tleParseResult: TLE.ParseResult = this._deploymentTemplate.getTLEParseResultFromJSONStringValue(value);
-        if (tleParseResult && tleParseResult.expression) {
-            const tleVisitor = new ReferenceInVariableDefinitionTLEVisitor();
-            tleParseResult.expression.accept(tleVisitor);
-
-            const jsonValueStartIndex: number = value.startIndex;
-            for (const tleReferenceSpan of tleVisitor.referenceSpans) {
-                this._referenceSpans.push(tleReferenceSpan.translate(jsonValueStartIndex));
-            }
-        }
-    }
-}
-
-class ReferenceInVariableDefinitionTLEVisitor extends TLE.Visitor {
-    private _referenceSpans: language.Span[] = [];
-
-    public get referenceSpans(): language.Span[] {
-        return this._referenceSpans;
-    }
-
-    public visitFunction(functionValue: TLE.FunctionValue): void {
-        if (functionValue && functionValue.nameToken.stringValue === "reference") {
-            this._referenceSpans.push(functionValue.nameToken.span);
-        }
-
-        super.visitFunction(functionValue);
     }
 }
