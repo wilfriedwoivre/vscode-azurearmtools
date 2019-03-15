@@ -1,0 +1,18 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/.vscode-test": true
+    },
+    // Turn off tsc task auto detection since we have the necessary tasks as npm scripts
+    "typescript.tsc.autoDetect": "off",
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll": true
+    }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "colorizer",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p ./",
+    "compile": "tsc --watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "node ./node_modules/vscode/bin/test ./test"
+  },
+  "activationEvents": [],
+  "engines": {
+    "vscode": "^1.28.0"
+  },
+  "keywords": [],
+  "author": "Microsoft",
+  "license": "MIT",
+  "contributes": {
+    "languages": [
+      {
+        "id": "arm-deployment-template",
+        "aliases": [
+          "ARM Deployment Template"
+        ],
+        "filenamePatterns": [
+          "*.template.json",
+          "template.json"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "markdown",
+        "scopeName": "text.html.markdown",
+        "path": "./grammars/markdown.tmLanguage"
+      },
+      {
+        "language": "arm-deployment-template",
+        "scopeName": "source.json.arm.deployment",
+        "path": "./grammars/arm-deployment-template.tmLanguage.json"
+      }
+    ]
+  },
+  "devDependencies": {
+    "js-yaml": "^3.12.0",
+    "plist": "^3.0.1",
+    "vscode": "^1.1.22",
+    "@types/node": "^11.11.3"
+  }
+}

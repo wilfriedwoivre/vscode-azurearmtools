@@ -1,0 +1,46 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "ARM Template",
+	"patterns": [
+		{
+			"include": "#bracketedstring"
+		},
+		{
+			"include": "#string"
+		}
+	],
+	"repository": {
+		"expression": {
+			"patterns": [
+				{
+					"name": "constant.numeric",
+					"match": "[0-9]+"
+				}
+			]
+		},
+		"bracketedstring": {
+			"name": "keyword.control",
+			"begin": "\"\\[(?!\\[)",
+			"beginComment": "A string that starts with [[ is not an expression",
+			"TODO": "No ending ] in string",
+			"end": "\\]\"",
+			"patterns": [
+				{
+					"include": "#expression"
+				}
+			]
+		},
+		"string": {
+			"name": "string.quoted.double.arm-template",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.arm-template",
+					"match": "\\\\."
+				}
+			]
+		}
+	},
+	"scopeName": "source.json.arm.deployment"
+}
