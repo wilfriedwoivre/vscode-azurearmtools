@@ -63,11 +63,11 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
         } else {
             return `${d.text}\n${" ".repeat(tabSize)}${d.scopes}`;
         }
-    }).join('\r');
-    let newResult = summary;
+    }).join('\n');
+    let newResult = summary.trimRight();
 
     if (fs.existsSync(resultPath)) {
-        let previousResult = fs.readFileSync(resultPath).toString();
+        let previousResult = fs.readFileSync(resultPath).toString().trimRight().replace(/(\r\n)|\r/g, '\n');
 
         try {
             assert.equal(newResult, previousResult);
@@ -115,7 +115,7 @@ suite('TLE colorization', () => {
     })
 
     orphanedResultFiles.forEach(orphanedFile => {
-        test(orphanedFile, () => { throw new Error(`Orphaned result file ${orphanedFile}`); });
+        test(`ORPHANED: ${orphanedFile}`, () => { throw new Error(`Orphaned result file ${orphanedFile}`); });
     });
 
     testFiles.forEach(testFile => {

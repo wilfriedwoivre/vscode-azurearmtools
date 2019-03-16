@@ -157,19 +157,18 @@
             ]
         },
         "tle-expression-string": {
-            "name": "keyword.other.expression.arm-template",
+            "name": "meta.expression.arm-template",
             "begin": "\"\\[(?!\\[)",
             "beginComment": "A string that starts with [[ is not an expression",
-            "TODO asdf": "No ending ] in string",
             "end": "\\]\"",
             "beginCaptures": {
                 "0": {
-                    "name": "keyword.other.expression.begin.arm-template"
+                    "name": "meta.expression.arm-template keyword.other.expression.begin.arm-template"
                 }
             },
             "endCaptures": {
                 "0": {
-                    "name": "keyword.other.expression.end.arm-template"
+                    "name": "meta.expression.arm-template keyword.other.expression.end.arm-template"
                 }
             }
         },
