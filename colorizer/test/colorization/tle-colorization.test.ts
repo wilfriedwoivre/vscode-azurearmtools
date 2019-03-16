@@ -5,6 +5,8 @@
 
 'use strict';
 
+const OVERWRITE = false;
+
 import { suite, test } from 'mocha';
 import * as assert from 'assert';
 import { commands, Uri } from 'vscode';
@@ -62,23 +64,22 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             return `${d.text}\n${" ".repeat(tabSize)}${d.scopes}`;
         }
     }).join('\r');
-    //let newResult = JSON.stringify((<(string | TokenInfo)[]>[summary]).concat(data), null, '\t');
     let newResult = summary;
 
     if (fs.existsSync(resultPath)) {
-
-        // let previousRawData = <[string, TokenInfo[]]>JSON.parse(fs.readFileSync(resultPath).toString());
-        // let [previousSummary, ...previousData]: [string, TokenInfo[]] = previousRawData;
         let previousResult = fs.readFileSync(resultPath).toString();
 
         try {
-            // assert.equal(summary, previousSummary);
-            // assert.deepEqual(data, previousData);
             assert.equal(newResult, previousResult);
         } catch (e) {
-            fs.writeFileSync(resultPath, newResult, { flag: 'w' });
-            console.log(' at assertUnchangedTokens (c:\Users\stephwe\Repos\vscode-azurearmtools\tle-colorizer\test\colorization\colorization.test.ts:72:19)');
-            throw new Error(`*** MODIFIED RESULTS FILE (${resultPath}). VERIFY THE CHANGES BEFORE CHECKING IN!\r\n${e.message ? e.message : e.toString()}`);
+            if (OVERWRITE) {
+                fs.writeFileSync(resultPath, newResult, { flag: 'w' });
+                throw new Error(`*** MODIFIED RESULTS FILE (${resultPath}). VERIFY THE CHANGES BEFORE CHECKING IN!\r\n${e.message ? e.message : e.toString()}`);
+            } else {
+                let newResultPath = resultPath + ".actual";
+                fs.writeFileSync(newResultPath, newResult, { flag: 'w' });
+                throw new Error(`*** ACTUAL RESULTS ARE IN (${newResultPath}).`);
+            }
         }
     } else {
         fs.writeFileSync(resultPath, newResult);
