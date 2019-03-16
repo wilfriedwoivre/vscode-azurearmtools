@@ -31,17 +31,17 @@
 			]
 		},
 		"string": {
-			"name": "string.quoted.double.arm-template",
+			"name": "string.quoted.double.arm-deployment",
 			"begin": "\"",
 			"end": "\"",
 			"patterns": [
 				{
-					"name": "constant.character.escape.arm-template",
+					"name": "constant.character.escape.arm-deployment",
 					"match": "\\\\."
 				}
 			]
 		}
 	},
-	"scopeName": "source.json.arm.deployment",
+	"scopeName": "source.arm-deployment",
 	"uuid": "3ADA43CD-2258-4907-8477-169A7FDDF216"
 }

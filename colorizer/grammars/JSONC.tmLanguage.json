@@ -152,9 +152,29 @@
             "name": "string.quoted.double.json.comments",
             "patterns": [
                 {
+                    "include": "#template-language-expression"
+                },
+                {
                     "include": "#stringcontent"
                 }
             ]
+        },
+        "template-language-expression": {
+            "name": "keyword.other.expression.arm-template",
+            "begin": "^\\[(?!\\[)",
+            "beginComment": "A string that starts with [[ is not an expression",
+            "TODO asdf": "No ending ] in string",
+            "end": "\\]",
+            "beginCaptures": {
+                "0": {
+                    "name": "keyword.other.expression.begin.arm-template"
+                }
+            },
+            "endCaptures": {
+                "0": {
+                    "name": "keyword.other.expression.end.arm-template"
+                }
+            }
         },
         "objectkey": {
             "begin": "\"",
@@ -190,6 +210,9 @@
         },
         "value": {
             "patterns": [
+                {
+                    "include": "#embedded-tle"
+                },
                 {
                     "include": "#constant"
                 },

@@ -32,17 +32,19 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     //   "$TEST": <test-text>"
     //
     // then only the data for <test-text> will be put into the results file
-    const testStartToken: string = '"$TEST"';
+    const testStartToken: string = '$TEST';
     if (testContent.includes(testStartToken)) {
         // Extract the tokens before the test string
         let nBegin = data.findIndex(t => t.text === testStartToken);
         assert(nBegin >= 0, `Couldn't find token '${testStartToken}'`);
         // Skip past the end quote, colon and whitespace
-        assert(data[nBegin + 1].text === ': ');
-        nBegin += 2;
+        assert(data[nBegin + 1].text === '"');
+        assert(data[nBegin + 2].text === ':');
+        assert(data[nBegin + 3].text === ' ');
+        nBegin += 4;
 
         // Find the end of the test data
-        let nEnd = data.findIndex(t => t.text === '}');
+        let nEnd = data.findIndex(t => t.text === '}' && t.scopes.includes('punctuation.definition.dictionary.end.json.comments'));
         assert(nEnd >= 0, "Couldn't find end of test string");
         nEnd -= 1;
 
