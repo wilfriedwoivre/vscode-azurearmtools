@@ -66,24 +66,25 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     }).join('\n');
     let newResult = summary.trimRight();
 
+    let actualResultPath = OVERWRITE ? resultPath : resultPath + ".actual";
     if (fs.existsSync(resultPath)) {
         let previousResult = fs.readFileSync(resultPath).toString().trimRight().replace(/(\r\n)|\r/g, '\n');
 
         try {
             assert.equal(newResult, previousResult);
         } catch (e) {
+            fs.writeFileSync(actualResultPath, newResult, { flag: 'w' });
+
             if (OVERWRITE) {
-                fs.writeFileSync(resultPath, newResult, { flag: 'w' });
-                throw new Error(`*** MODIFIED RESULTS FILE (${resultPath}). VERIFY THE CHANGES BEFORE CHECKING IN!\r\n${e.message ? e.message : e.toString()}`);
+                throw new Error(`*** MODIFIED THE RESULTS FILE (${actualResultPath}). VERIFY THE CHANGES BEFORE CHECKING IN!\r\n${e.message ? e.message : e.toString()}`);
             } else {
-                let newResultPath = resultPath + ".actual";
-                fs.writeFileSync(newResultPath, newResult, { flag: 'w' });
-                throw new Error(`*** ACTUAL RESULTS ARE IN (${newResultPath}).`);
+                fs.writeFileSync(actualResultPath, newResult, { flag: 'w' });
+                throw new Error(`*** ACTUAL RESULTS ARE IN (${actualResultPath}).`);
             }
         }
     } else {
-        fs.writeFileSync(resultPath, newResult);
-        throw new Error(`*** NEW RESULTS FILE file://${resultPath}. VERIFY BEFORE CHECKING IN!`);
+        fs.writeFileSync(actualResultPath, newResult);
+        throw new Error(`*** NEW RESULTS FILE ${actualResultPath}`);
     }
 }
 
