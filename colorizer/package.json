@@ -33,14 +33,9 @@
     ],
     "grammars": [
       {
-        "language": "markdown",
-        "scopeName": "text.html.markdown",
-        "path": "./grammars/markdown.tmLanguage"
-      },
-      {
         "language": "arm-deployment-template",
-        "scopeName": "source.json.arm.deployment",
-        "path": "./grammars/arm-deployment-template.tmLanguage.json"
+        "scopeName": "source.json.comments",
+        "path": "./grammars/JSONC.tmLanguage.json"
       }
     ]
   },

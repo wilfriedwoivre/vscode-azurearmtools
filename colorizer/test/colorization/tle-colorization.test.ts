@@ -17,6 +17,8 @@ interface TokenInfo {
     colors: { [key: string]: string }[];
 }
 
+const tabSize = 20;
+
 async function assertUnchangedTokens(testPath: string, resultPath: string): Promise<void> {
     let testContent = fs.readFileSync(testPath).toString();
 
@@ -50,26 +52,34 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     }
 
     let summary = data.map(d => {
-        let lastScope = d.scopes.split(' ').pop();
-        return `[${lastScope}]${d.text}`;
-    }).join();
-    let newResults = JSON.stringify((<(string | TokenInfo)[]>[summary]).concat(data), null, '\t');
+        //let lastScope = d.scopes.split(' ').pop();
+        let padding = tabSize - d.text.length;
+        if (padding > 0) {
+            return `${d.text}${" ".repeat(padding)}${d.scopes}`;
+        } else {
+            return `${d.text}\n${" ".repeat(tabSize)}${d.scopes}`;
+        }
+    }).join('\r');
+    //let newResult = JSON.stringify((<(string | TokenInfo)[]>[summary]).concat(data), null, '\t');
+    let newResult = summary;
 
     if (fs.existsSync(resultPath)) {
 
-        let previousRawData = <[string, TokenInfo[]]>JSON.parse(fs.readFileSync(resultPath).toString());
-        let [previousSummary, ...previousData]: [string, TokenInfo[]] = previousRawData;
+        // let previousRawData = <[string, TokenInfo[]]>JSON.parse(fs.readFileSync(resultPath).toString());
+        // let [previousSummary, ...previousData]: [string, TokenInfo[]] = previousRawData;
+        let previousResult = fs.readFileSync(resultPath).toString();
 
         try {
-            assert.equal(summary, previousSummary);
-            assert.deepEqual(data, previousData);
+            // assert.equal(summary, previousSummary);
+            // assert.deepEqual(data, previousData);
+            assert.equal(newResult, previousResult);
         } catch (e) {
-            fs.writeFileSync(resultPath, newResults, { flag: 'w' });
+            fs.writeFileSync(resultPath, newResult, { flag: 'w' });
             console.log(' at assertUnchangedTokens (c:\Users\stephwe\Repos\vscode-azurearmtools\tle-colorizer\test\colorization\colorization.test.ts:72:19)');
             throw new Error(`*** MODIFIED RESULTS FILE (${resultPath}). VERIFY THE CHANGES BEFORE CHECKING IN!\r\n${e.message ? e.message : e.toString()}`);
         }
     } else {
-        fs.writeFileSync(resultPath, newResults);
+        fs.writeFileSync(resultPath, newResult);
         throw new Error(`*** NEW RESULTS FILE file://${resultPath}. VERIFY BEFORE CHECKING IN!`);
     }
 }
@@ -96,7 +106,7 @@ suite('TLE colorization', () => {
     let testToResultFileMap = new Map<string, string>();
     let orphanedResultFiles = new Set<string>(resultFiles);
     testFiles.forEach(testFile => {
-        let resultFile = path.basename(testFile) + '.json';
+        let resultFile = path.basename(testFile) + '.txt';
         testToResultFileMap.set(testFile, resultFile);
         orphanedResultFiles.delete(resultFile);
     })

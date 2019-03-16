@@ -4,7 +4,7 @@
     "parameters": {
         "guid": {
             "type": "string",
-            "defaultValue": "[newGuid()]"
+            "defaultValue": "[subscription()]"
         }
     }
 }

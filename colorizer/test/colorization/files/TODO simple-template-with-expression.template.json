@@ -3,7 +3,7 @@
     "parameters": {
         "guid": {
             "type": "string",
-            "defaultValue": 1.23
+            "defaultValue": "[subscription()]"
         }
     }
 }

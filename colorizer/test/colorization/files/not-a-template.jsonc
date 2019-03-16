@@ -1,3 +1,7 @@
+/*
+    Should be colorized as normal JSONC
+*/
+// Another comment
 {
     "parameters": {
         "guid": {
