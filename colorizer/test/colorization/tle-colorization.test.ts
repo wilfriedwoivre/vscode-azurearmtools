@@ -31,9 +31,11 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
 
     // If the test contains code like this:
     //
-    //   "$TEST": <test-text>"
-    //
-    // then only the data for <test-text> will be put into the results file
+    //   "$TEST": <test1-text>",
+    //   "$TEST": <test2-text>"
+    //   ...
+    // }
+    // then only the data for <test1..n-text> will be put into the results file
     const testStartToken: string = '$TEST';
     if (testContent.includes(testStartToken)) {
         // Extract the tokens before the test string
