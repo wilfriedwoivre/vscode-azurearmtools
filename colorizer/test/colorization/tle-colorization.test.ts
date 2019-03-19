@@ -5,6 +5,7 @@
 
 'use strict';
 
+//Turn on temporarily to overwrite results files rather than creating new ".txt.actual" files when there are differences. Should normally leave this as false.
 const OVERWRITE = false;
 
 import { suite, test } from 'mocha';
@@ -81,37 +82,48 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
 
     let newResult = testCases.map((testcase: ITestcase) => {
         let prefix = testcase.testString ? testcase.testString + "\n" : "";
+
         let testCaseString = testcase.data.map(td => {
             let padding = tabSize - td.text.length;
+            let text = td.text;
             if (padding > 0) {
-                return `${td.text}${" ".repeat(padding)}${td.scopes}`;
+                return `${text}${" ".repeat(padding)}${td.scopes}`;
             } else {
-                return `${td.text}\n${" ".repeat(tabSize)}${td.scopes}`;
+                return `${text}\n${" ".repeat(tabSize)}${td.scopes}`;
             }
         }).join('\n');
         return prefix + testCaseString;
     }).join('\n\n');
     newResult = newResult.trimRight() + "\n";
 
-    let actualResultPath = OVERWRITE ? resultPath : resultPath + ".actual";
+    let actualResultPath = resultPath + ".actual";
+    let resultPathToWriteTo = OVERWRITE ? resultPath : actualResultPath;
+    let removeActualResultPath = false;
     if (fs.existsSync(resultPath)) {
         let previousResult = fs.readFileSync(resultPath).toString().trimRight().replace(/(\r\n)|\r/g, '\n');
 
         try {
             assert.equal(newResult.trimRight(), previousResult.trimRight());
+            removeActualResultPath = true;
         } catch (e) {
-            fs.writeFileSync(actualResultPath, newResult, { flag: 'w' });
+            fs.writeFileSync(resultPathToWriteTo, newResult, { flag: 'w' });
 
             if (OVERWRITE) {
-                throw new Error(`*** MODIFIED THE RESULTS FILE (${actualResultPath}). VERIFY THE CHANGES BEFORE CHECKING IN!\r\n${e.message ? e.message : e.toString()}`);
+                removeActualResultPath = true;
+                throw new Error(`*** MODIFIED THE RESULTS FILE (${resultPathToWriteTo}). VERIFY THE CHANGES BEFORE CHECKING IN!\r\n${e.message ? e.message : e.toString()}`);
             } else {
-                fs.writeFileSync(actualResultPath, newResult, { flag: 'w' });
-                throw new Error(`*** ACTUAL RESULTS ARE IN (${actualResultPath}).`);
+                fs.writeFileSync(resultPathToWriteTo, newResult, { flag: 'w' });
+                throw new Error(`*** ACTUAL RESULTS ARE IN (${resultPathToWriteTo}).`);
             }
         }
     } else {
-        fs.writeFileSync(actualResultPath, newResult);
-        throw new Error(`*** NEW RESULTS FILE ${actualResultPath}`);
+        fs.writeFileSync(resultPathToWriteTo, newResult);
+        removeActualResultPath = true;
+        throw new Error(`*** NEW RESULTS FILE ${resultPathToWriteTo}`);
+    }
+
+    if (removeActualResultPath && fs.existsSync(actualResultPath)) {
+        fs.unlinkSync(actualResultPath);
     }
 }
 
