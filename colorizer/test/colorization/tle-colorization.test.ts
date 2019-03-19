@@ -6,7 +6,7 @@
 'use strict';
 
 //Turn on temporarily to overwrite results files rather than creating new ".txt.actual" files when there are differences. Should normally leave this as false.
-const OVERWRITE = true;
+const OVERWRITE = false;
 
 import { suite, test } from 'mocha';
 import * as assert from 'assert';
@@ -33,6 +33,8 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     // Let's use more reasonable property names in our data
     let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c, scopes: d.t, colors: d.r });
     let testCases: ITestcase[];
+
+    let shouldHaveInvalidTokens = testPath.includes('.invalid.');
 
     // If the test contains code like this:
     //
@@ -101,6 +103,12 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     let removeActualResultPath = false;
     if (fs.existsSync(resultPath)) {
         let previousResult = fs.readFileSync(resultPath).toString().trimRight().replace(/(\r\n)|\r/g, '\n');
+
+        if (shouldHaveInvalidTokens) {
+            assert(newResult.includes('invalid.illegal'), "This testcase filename includes 'invalid', and so should have had at least one invalid token in the result.");
+        } else {
+            assert(!newResult.includes('invalid.illegal'), "This testcase filename does not include 'invalid', but at least one invalid token was found in the result.");
+        }
 
         try {
             assert.equal(newResult.trimRight(), previousResult.trimRight());

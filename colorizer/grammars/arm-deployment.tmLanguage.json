@@ -16,12 +16,12 @@
 			"end": "\\]\"",
 			"beginCaptures": {
 				"0": {
-					"name": "meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment"
+					"name": "keyword.other.expression.begin.arm-deployment"
 				}
 			},
 			"endCaptures": {
 				"0": {
-					"name": "meta.expression.arm-deployment keyword.other.expression.end.arm-deployment"
+					"name": "keyword.other.expression.end.arm-deployment"
 				}
 			},
 			"patterns": [
@@ -37,8 +37,8 @@
 		"expression": {
 			"patterns": [
 				{
-					"name": "constant.numeric",
-					"match": "[0-9]+"
+					"name": "constant.numeric.arm-deployment",
+					"match": "[+-]?[0-9]+(\\.[0-9]+)?([Ee][+-]?[0-9]+)?"
 				}
 			]
 		}
