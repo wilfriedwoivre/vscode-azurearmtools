@@ -18,7 +18,7 @@
   "author": "Microsoft",
   "license": "MIT",
   "contributes": {
-    "languages": [
+    "$TODO:languages": [
       {
         "id": "arm-deployment-template",
         "aliases": [

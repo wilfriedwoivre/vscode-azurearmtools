@@ -16,14 +16,23 @@
 			"end": "\\]\"",
 			"beginCaptures": {
 				"0": {
-					"name": "meta.expression.arm-template keyword.other.expression.begin.arm-template"
+					"name": "meta.expression.arm-template keyword.other.expression.begin.arm-deployment-expression"
 				}
 			},
 			"endCaptures": {
 				"0": {
-					"name": "meta.expression.arm-template keyword.other.expression.end.arm-template"
+					"name": "meta.expression.arm-template keyword.other.expression.end.arm-deployment-expression"
 				}
-			}
+			},
+			"patterns": [
+				{
+					"include": "#expression"
+				},
+				{
+					"name": "invalid.illegal.expected-expression.arm-deployment-expression",
+					"match": "."
+				}
+			]
 		},
 		"expression": {
 			"patterns": [
