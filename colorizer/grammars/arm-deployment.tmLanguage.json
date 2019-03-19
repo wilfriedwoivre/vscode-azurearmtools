@@ -10,18 +10,18 @@
 	],
 	"repository": {
 		"expressionstring": {
-			"name": "meta.expression.arm-template",
+			"name": "meta.expression.arm-deployment",
 			"begin": "\"\\[(?!\\[)",
 			"beginComment": "A string that starts with [[ is not an expression",
 			"end": "\\]\"",
 			"beginCaptures": {
 				"0": {
-					"name": "meta.expression.arm-template keyword.other.expression.begin.arm-deployment-expression"
+					"name": "meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment"
 				}
 			},
 			"endCaptures": {
 				"0": {
-					"name": "meta.expression.arm-template keyword.other.expression.end.arm-deployment-expression"
+					"name": "meta.expression.arm-deployment keyword.other.expression.end.arm-deployment"
 				}
 			},
 			"patterns": [
@@ -29,8 +29,8 @@
 					"include": "#expression"
 				},
 				{
-					"name": "invalid.illegal.expected-expression.arm-deployment-expression",
-					"match": "."
+					"name": "invalid.illegal.expected-expression.arm-deployment",
+					"match": "[^\\s]"
 				}
 			]
 		},
@@ -43,6 +43,6 @@
 			]
 		}
 	},
-	"scopeName": "source.arm-deployment-expression",
+	"scopeName": "source.arm-deployment",
 	"uuid": "3ADA43CD-2258-4907-8477-169A7FDDF216"
 }

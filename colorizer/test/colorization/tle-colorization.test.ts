@@ -6,7 +6,7 @@
 'use strict';
 
 //Turn on temporarily to overwrite results files rather than creating new ".txt.actual" files when there are differences. Should normally leave this as false.
-const OVERWRITE = false;
+const OVERWRITE = true;
 
 import { suite, test } from 'mocha';
 import * as assert from 'assert';

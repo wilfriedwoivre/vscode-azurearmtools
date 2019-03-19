@@ -37,8 +37,8 @@
           "source.json",
           "source.json.comments"
         ],
-        "scopeName": "source.arm-deployment-expression",
-        "path": "./grammars/arm-deployment-expression.tmLanguage.json"
+        "scopeName": "source.arm-deployment",
+        "path": "./grammars/arm-deployment.tmLanguage.json"
       }
     ]
   },
