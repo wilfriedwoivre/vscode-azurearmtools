@@ -33,9 +33,12 @@
     ],
     "grammars": [
       {
-        "language": "arm-deployment-template",
-        "scopeName": "source.json.comments",
-        "path": "./grammars/JSONC.tmLanguage.json"
+        "injectTo": [
+          "source.json",
+          "source.json.comments"
+        ],
+        "scopeName": "source.arm-deployment-expression",
+        "path": "./grammars/arm-deployment-expression.tmLanguage.json"
       }
     ]
   },

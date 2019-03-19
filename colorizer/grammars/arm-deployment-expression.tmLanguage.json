@@ -1,0 +1,39 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "ARM Template",
+	"injectionSelector": "L:meta.structure.dictionary.value.json,L:meta.structure.dictionary.value.json.comments",
+	"injectionSelectorComment": "We will be injected before (to the Left) of dictionary values in JSON and JSONC",
+	"patterns": [
+		{
+			"include": "#expressionstring"
+		}
+	],
+	"repository": {
+		"expressionstring": {
+			"name": "meta.expression.arm-template",
+			"begin": "\"\\[(?!\\[)",
+			"beginComment": "A string that starts with [[ is not an expression",
+			"end": "\\]\"",
+			"beginCaptures": {
+				"0": {
+					"name": "meta.expression.arm-template keyword.other.expression.begin.arm-template"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.expression.arm-template keyword.other.expression.end.arm-template"
+				}
+			}
+		},
+		"expression": {
+			"patterns": [
+				{
+					"name": "constant.numeric",
+					"match": "[0-9]+"
+				}
+			]
+		}
+	},
+	"scopeName": "source.arm-deployment-expression",
+	"uuid": "3ADA43CD-2258-4907-8477-169A7FDDF216"
+}
