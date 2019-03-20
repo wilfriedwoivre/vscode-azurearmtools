@@ -34,7 +34,11 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c, scopes: d.t, colors: d.r });
     let testCases: ITestcase[];
 
+    // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.  Otherwise they should contain none.
     let shouldHaveInvalidTokens = testPath.includes('.invalid.');
+
+    // If the test filename contains ".not-arm.", then all testcases in it should not contain any arm-deployment tokens.  Otherwise they should have at least one.
+    let shouldHaveArmTokens = !testPath.includes('.not-arm.');
 
     // If the test contains code like this:
     //
@@ -82,7 +86,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     // If no individual testcases found, the whole file is a single testcase
     testCases = testCases || [<ITestcase>{ data }];
 
-    let newResult = testCases.map((testcase: ITestcase) => {
+    let testcaseResults = testCases.map((testcase: ITestcase) => {
         let prefix = testcase.testString ? testcase.testString + "\n" : "";
 
         let testCaseString = testcase.data.map(td => {
@@ -95,8 +99,10 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
             }
         }).join('\n');
         return prefix + testCaseString;
-    }).join('\n\n');
-    newResult = newResult.trimRight() + "\n";
+    });
+
+    let newResultFullString = testcaseResults.join('\n\n');
+    newResultFullString = newResultFullString.trimRight() + "\n";
 
     let actualResultPath = resultPath + ".actual";
     let resultPathToWriteTo = OVERWRITE ? resultPath : actualResultPath;
@@ -104,28 +110,36 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     if (fs.existsSync(resultPath)) {
         let previousResult = fs.readFileSync(resultPath).toString().trimRight().replace(/(\r\n)|\r/g, '\n');
 
-        if (shouldHaveInvalidTokens) {
-            assert(newResult.includes('invalid.illegal'), "This testcase filename includes 'invalid', and so should have had at least one invalid token in the result.");
-        } else {
-            assert(!newResult.includes('invalid.illegal'), "This testcase filename does not include 'invalid', but at least one invalid token was found in the result.");
+        for (let testcaseResult of testcaseResults) {
+            if (shouldHaveInvalidTokens) {
+                assert(testcaseResult.includes('invalid.illegal'), "This test's filename contains 'invalid', and so should have had at least one invalid token in each testcase result.");
+            } else {
+                assert(!testcaseResult.includes('invalid.illegal'), "This test's filename does not contain 'invalid', but at least one testcase in it contains an invalid token.");
+            }
+
+            if (shouldHaveArmTokens) {
+                assert(testcaseResult.includes('arm-deployment'), "This test's filename does not contain 'not-arm', and so every testcase in it should contain at least one arm-deployment token.");
+            } else {
+                assert(!testcaseResult.includes('arm-deployment'), "This test's filename contains 'not-arm', but at least one testcase in it contains an arm-deployment token.");
+            }
         }
 
         try {
-            assert.equal(newResult.trimRight(), previousResult.trimRight());
+            assert.equal(newResultFullString.trimRight(), previousResult.trimRight());
             removeActualResultPath = true;
         } catch (e) {
-            fs.writeFileSync(resultPathToWriteTo, newResult, { flag: 'w' });
+            fs.writeFileSync(resultPathToWriteTo, newResultFullString, { flag: 'w' });
 
             if (OVERWRITE) {
                 removeActualResultPath = true;
                 throw new Error(`*** MODIFIED THE RESULTS FILE (${resultPathToWriteTo}). VERIFY THE CHANGES BEFORE CHECKING IN!\r\n${e.message ? e.message : e.toString()}`);
             } else {
-                fs.writeFileSync(resultPathToWriteTo, newResult, { flag: 'w' });
+                fs.writeFileSync(resultPathToWriteTo, newResultFullString, { flag: 'w' });
                 throw new Error(`*** ACTUAL RESULTS ARE IN (${resultPathToWriteTo}).`);
             }
         }
     } else {
-        fs.writeFileSync(resultPathToWriteTo, newResult);
+        fs.writeFileSync(resultPathToWriteTo, newResultFullString);
         removeActualResultPath = true;
         throw new Error(`*** NEW RESULTS FILE ${resultPathToWriteTo}`);
     }
