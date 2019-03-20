@@ -37,8 +37,42 @@
 		"expression": {
 			"patterns": [
 				{
-					"name": "constant.numeric.arm-deployment",
-					"match": "[+-]?[0-9]+(\\.[0-9]+)?([Ee][+-]?[0-9]+)?"
+					"include": "#string"
+				},
+				{
+					"include": "#number"
+				}
+			]
+		},
+		"number": {
+			"name": "constant.numeric.arm-deployment",
+			"match": "[+-]?[0-9]+(\\.[0-9]+)?([Ee][+-]?[0-9]+)?"
+		},
+		"string": {
+			"name": "string.arm-deployment",
+			"begin": "[']",
+			"beginCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.begin.arm-deployment"
+				}
+			},
+			"end": "['](?!['])",
+			"endCaptures": {
+				"0": {
+					"name": "punctuation.definition.string.end.arm-deployment"
+				}
+			},
+			"patterns": [
+				{
+					"include": "#stringcontent"
+				}
+			]
+		},
+		"stringcontent": {
+			"patterns": [
+				{
+					"name": "constant.character.escape.arm-deployment",
+					"match": "['][']"
 				}
 			]
 		}
