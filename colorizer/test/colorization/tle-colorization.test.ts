@@ -3,16 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+// tslint:disable:max-func-body-length
+
 'use strict';
 
-//Turn on temporarily to overwrite results files rather than creating new ".txt.actual" files when there are differences. Should normally leave this as false.
+// Turn on temporarily to overwrite results files rather than creating new ".txt.actual" files when there are differences.
+// Should normally leave this as false.
 const OVERWRITE = false;
 
-import { suite, test } from 'mocha';
 import * as assert from 'assert';
-import { commands, Uri } from 'vscode';
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
+import { commands, Uri } from 'vscode';
 
 interface ITestcase {
     testString?: string;
@@ -34,10 +36,12 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     let data: ITokenInfo[] = rawData.map(d => <ITokenInfo>{ text: d.c, scopes: d.t, colors: d.r });
     let testCases: ITestcase[];
 
-    // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.  Otherwise they should contain none.
+    // If the test filename contains ".invalid.", then all testcases in it should have at least one "invalid" token.
+    // Otherwise they should contain none.
     let shouldHaveInvalidTokens = testPath.includes('.invalid.');
 
-    // If the test filename contains ".not-arm.", then all testcases in it should not contain any arm-deployment tokens.  Otherwise they should have at least one.
+    // If the test filename contains ".not-arm.", then all testcases in it should not contain any arm-deployment tokens.
+    // Otherwise they should have at least one.
     let shouldHaveArmTokens = !testPath.includes('.not-arm.');
 
     // If the test contains code like this:
@@ -87,7 +91,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     testCases = testCases || [<ITestcase>{ data }];
 
     let testcaseResults = testCases.map((testcase: ITestcase) => {
-        let prefix = testcase.testString ? testcase.testString + "\n" : "";
+        let prefix = testcase.testString ? `${testcase.testString}\n` : "";
 
         let testCaseString = testcase.data.map(td => {
             let padding = tabSize - td.text.length;
@@ -102,29 +106,38 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
     });
 
     let newResultFullString = testcaseResults.join('\n\n');
-    newResultFullString = newResultFullString.trimRight() + "\n";
+    newResultFullString = `${newResultFullString.trimRight()}\n`;
 
-    let actualResultPath = resultPath + ".actual";
+    let actualResultPath = `${resultPath}.actual`;
     let resultPathToWriteTo = OVERWRITE ? resultPath : actualResultPath;
     let removeActualResultPath = false;
     if (fs.existsSync(resultPath)) {
         let previousResult = fs.readFileSync(resultPath).toString().trimRight().replace(/(\r\n)|\r/g, '\n');
 
-        for (let testcaseResult of testcaseResults) {
-            if (shouldHaveInvalidTokens) {
-                assert(testcaseResult.includes('invalid.illegal'), "This test's filename contains 'invalid', and so should have had at least one invalid token in each testcase result.");
-            } else {
-                assert(!testcaseResult.includes('invalid.illegal'), "This test's filename does not contain 'invalid', but at least one testcase in it contains an invalid token.");
-            }
-
-            if (shouldHaveArmTokens) {
-                assert(testcaseResult.includes('arm-deployment'), "This test's filename does not contain 'not-arm', and so every testcase in it should contain at least one arm-deployment token.");
-            } else {
-                assert(!testcaseResult.includes('arm-deployment'), "This test's filename contains 'not-arm', but at least one testcase in it contains an arm-deployment token.");
-            }
-        }
-
         try {
+            for (let testcaseResult of testcaseResults) {
+                if (shouldHaveInvalidTokens) {
+                    assert(
+                        testcaseResult.includes('invalid.illegal'),
+                        "This test's filename contains 'invalid', and so should have had at least one invalid token in each testcase result.");
+                } else {
+                    assert(
+                        !testcaseResult.includes('invalid.illegal'),
+                        "This test's filename does not contain 'invalid', but at least one testcase in it contains an invalid token.");
+                }
+
+                if (shouldHaveArmTokens) {
+                    assert(
+                        testcaseResult.includes('arm-deployment'),
+                        // tslint:disable-next-line: max-line-length
+                        "This test's filename does not contain 'not-arm', and so every testcase in it should contain at least one arm-deployment token.");
+                } else {
+                    assert(
+                        !testcaseResult.includes('arm-deployment'),
+                        "This test's filename contains 'not-arm', but at least one testcase in it contains an arm-deployment token.");
+                }
+            }
+
             assert.equal(newResultFullString.trimRight(), previousResult.trimRight());
             removeActualResultPath = true;
         } catch (e) {
@@ -132,10 +145,11 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
 
             if (OVERWRITE) {
                 removeActualResultPath = true;
+                // tslint:disable-next-line: max-line-length
                 throw new Error(`*** MODIFIED THE RESULTS FILE (${resultPathToWriteTo}). VERIFY THE CHANGES BEFORE CHECKING IN!\r\n${e.message ? e.message : e.toString()}`);
             } else {
                 fs.writeFileSync(resultPathToWriteTo, newResultFullString, { flag: 'w' });
-                throw new Error(`*** ACTUAL RESULTS ARE IN (${resultPathToWriteTo}).`);
+                throw new Error(`*** ACTUAL RESULTS ARE IN (${resultPathToWriteTo}).\r\n${e.message ? e.message : e.toString()}`);
             }
         }
     } else {
@@ -150,7 +164,7 @@ async function assertUnchangedTokens(testPath: string, resultPath: string): Prom
 }
 
 suite('TLE colorization', () => {
-    let testFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'files');
+    let testFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'inputs');
     let resultsFolder = path.join(__dirname, '..', '..', '..', 'test', 'colorization', 'results');
 
     let testFiles: string[];
@@ -171,10 +185,10 @@ suite('TLE colorization', () => {
     let testToResultFileMap = new Map<string, string>();
     let orphanedResultFiles = new Set<string>(resultFiles);
     testFiles.forEach(testFile => {
-        let resultFile = path.basename(testFile) + '.txt';
+        let resultFile = `${path.basename(testFile)}.txt`;
         testToResultFileMap.set(testFile, resultFile);
         orphanedResultFiles.delete(resultFile);
-    })
+    });
 
     orphanedResultFiles.forEach(orphanedFile => {
         test(`ORPHANED: ${orphanedFile}`, () => { throw new Error(`Orphaned result file ${orphanedFile}`); });

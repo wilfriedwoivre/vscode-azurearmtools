@@ -76,3 +76,7 @@ TODO:
 	The function can't call other user-defined functions.
 	The function can't use the reference function.
 	Parameters for the function can't have default values.
+
+TODO:
+    "$TEST": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 public ',parameters('LicenseKey'),' ',parameters('Licensee'))]",
+    "$TEST": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 ',string(variables('enableHA')),' ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
