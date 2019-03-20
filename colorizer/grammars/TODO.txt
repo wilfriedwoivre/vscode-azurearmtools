@@ -20,4 +20,4 @@ TODO: arrays
 TODO: objects
 
 TODO: An expression can return a string, integer, boolean, array, or object.
-string.arm-deployment -> string.quoted.single.arm-deployment
+TODO: Unicode?

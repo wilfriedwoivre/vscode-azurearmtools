@@ -49,7 +49,7 @@
 			"match": "[+-]?[0-9]+(\\.[0-9]+)?([Ee][+-]?[0-9]+)?"
 		},
 		"string": {
-			"name": "string.arm-deployment",
+			"name": "string.quoted.single.arm-deployment",
 			"begin": "[']",
 			"beginCaptures": {
 				"0": {
