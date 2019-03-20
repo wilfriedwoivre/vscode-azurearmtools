@@ -21,3 +21,58 @@ TODO: objects
 
 TODO: An expression can return a string, integer, boolean, array, or object.
 TODO: Unicode?
+TODO:
+	                    case '.':
+                        yield return new ExpressionToken { Type = ExpressionTokenType.Dot, Value = "." };
+                        break;
+
+                    case ',':
+                        yield return new ExpressionToken { Type = ExpressionTokenType.Comma, Value = ", " };
+                        break;
+
+                    case '(':
+                        yield return new ExpressionToken { Type = ExpressionTokenType.LeftParenthesis, Value = "(" };
+                        break;
+
+                    case ')':
+                        yield return new ExpressionToken { Type = ExpressionTokenType.RightParenthesis, Value = ")" };
+                        break;
+
+                    case '[':
+                        yield return new ExpressionToken { Type = ExpressionTokenType.LeftSquareBracket, Value = "[" };
+                        break;
+
+                    case ']':
+                        yield return new ExpressionToken { Type = ExpressionTokenType.RightSquareBracket, Value = "]" };
+                        break;
+
+TODO:
+	 case '\'':
+                        while (currentPosition < expression.Length)
+                        {
+                            currentPosition = ExpressionScanner.ScanForward(
+                                expression: expression,
+                                startPosition: currentPosition + 1,
+                                predicate: character => character != '\'');
+
+                            // NOTE(jogao): skip the 2nd \' for next ScanForward
+                            if (currentPosition + 1 < expression.Length && expression[currentPosition + 1] == '\'')
+                            {
+                                currentPosition++;
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        }
+
+TODO: should flag "[]" as missing an expression
+TODO: test: "[variables('environmentSettings')[parameters('environmentName')].instanceSize]"
+
+TODO:
+	When defining a user function, there are some restrictions:
+	The function can't access variables.
+	The function can only use parameters that are defined in the function. When you use the parameters function within a user-defined function, you're restricted to the parameters for that function.
+	The function can't call other user-defined functions.
+	The function can't use the reference function.
+	Parameters for the function can't have default values.
