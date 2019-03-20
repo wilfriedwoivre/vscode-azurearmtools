@@ -1,3 +1,5 @@
+https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates#syntax
+
 TODO: Need to handle JSON string escape characters
 
 				{
@@ -13,3 +15,6 @@ TODO: Need to handle JSON string escape characters
 						}
 					]
 				}
+
+TODO: arrays
+TODO: objects
