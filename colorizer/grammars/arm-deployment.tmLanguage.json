@@ -2,17 +2,17 @@
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 	"name": "ARM Template",
 	"injectionSelector": "L:meta.structure.dictionary.value.json,L:meta.structure.dictionary.value.json.comments",
-	"injectionSelectorComment": "These rules will be injected before (to the Left) of dictionary values in JSON and JSONC",
+	"$injectionSelectorComment": "These rules will be injected before (to the Left) of dictionary values in JSON and JSONC",
 	"patterns": [
 		{
-			"include": "#expressionstring"
+			"include": "#embeddedexpression"
 		}
 	],
 	"repository": {
-		"expressionstring": {
+		"embeddedexpression": {
 			"name": "meta.expression.arm-deployment",
 			"begin": "\"\\[(?!\\[)",
-			"beginComment": "A string that starts with [[ is not an expression",
+			"$beginComment": "A string that starts with [[ is not an expression",
 			"end": "\\]\"",
 			"beginCaptures": {
 				"0": {
@@ -81,7 +81,7 @@
 		},
 		"functioncall": {
 			"name": "meta.function-call.arm-deployment",
-			"begin": "(?x) # turn on extended mode\n (([_$[:alpha:]][_$[:alnum:]]*)(\\.))? # optional namespace+dot\n ([_$[:alpha:]][_$[:alnum:]]*) # function name\n (\\() # open paren",
+			"begin": "(?x) #extended mode\n \\s* ((?<namespace>[_$[:alpha:]][_$[:alnum:]]*) \\s* (\\.) \\s*)?   (?<functionname>[_$[:alpha:]][_$[:alnum:]]*)   \\s* (?<openparen>\\()",
 			"end": "\\)",
 			"beginCaptures": {
 				"2": {
@@ -101,7 +101,26 @@
 				"0": {
 					"name": "meta.brace.round.arm-deployment"
 				}
-			}
+			},
+			"patterns": [
+				{
+					"include": "#functionargs"
+				}
+			]
+		},
+		"functionargs": {
+			"name": "meta.function-arguments.arm-deployment",
+			"begin": "\\G\\s*",
+			"end": "\\s*(?=\\))",
+			"patterns": [
+				{
+					"include": "#expression"
+				},
+				{
+					"match": "[\\s^,)]",
+					"name": "invalid.illegal.expected-comma.arm-deployment"
+				}
+			]
 		}
 	},
 	"scopeName": "source.arm-deployment",

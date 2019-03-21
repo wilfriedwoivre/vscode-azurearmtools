@@ -156,22 +156,6 @@
                 }
             ]
         },
-        "tle-expression-string": {
-            "name": "meta.expression.arm-deployment",
-            "begin": "\"\\[(?!\\[)",
-            "beginComment": "A string that starts with [[ is not an expression",
-            "end": "\\]\"",
-            "beginCaptures": {
-                "0": {
-                    "name": "meta.expression.arm-deployment keyword.other.expression.begin.arm-deployment"
-                }
-            },
-            "endCaptures": {
-                "0": {
-                    "name": "meta.expression.arm-deployment keyword.other.expression.end.arm-deployment"
-                }
-            }
-        },
         "objectkey": {
             "begin": "\"",
             "beginCaptures": {
@@ -207,16 +191,10 @@
         "value": {
             "patterns": [
                 {
-                    "include": "#embedded-tle"
-                },
-                {
                     "include": "#constant"
                 },
                 {
                     "include": "#number"
-                },
-                {
-                    "include": "#tle-expression-string"
                 },
                 {
                     "include": "#string"
