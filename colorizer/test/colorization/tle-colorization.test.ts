@@ -195,7 +195,7 @@ suite('TLE colorization', () => {
     });
 
     testFiles.forEach(testFile => {
-        if (testFile.includes('TODO')) {
+        if (testFile.startsWith('TODO')) {
             test(testFile);
         } else {
             test(testFile, async (): Promise<void> => {

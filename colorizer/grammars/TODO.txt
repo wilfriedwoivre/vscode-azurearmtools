@@ -80,3 +80,10 @@ TODO:
 TODO:
     "$TEST": "[concat('sudo sh config-bootstrap-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 public ',parameters('LicenseKey'),' ',parameters('Licensee'))]",
     "$TEST": "[concat('sudo sh config-additional-node.sh ',parameters('AdminUser'),' ''',parameters('AdminPassword'),''' anyauth 5 10 ',string(variables('enableHA')),' ',parameters('LicenseKey'),' ',parameters('Licensee'))]"
+
+TODO:
+    Do we need something like this?
+    https://github.com/Microsoft/TypeScript-TmLanguage/blob/master/TypeScript%20Indent.tmPreferences
+
+TODO:
+    multi-line

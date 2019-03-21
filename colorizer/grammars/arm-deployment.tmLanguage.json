@@ -2,7 +2,7 @@
 	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 	"name": "ARM Template",
 	"injectionSelector": "L:meta.structure.dictionary.value.json,L:meta.structure.dictionary.value.json.comments",
-	"injectionSelectorComment": "We will be injected before (to the Left) of dictionary values in JSON and JSONC",
+	"injectionSelectorComment": "These rules will be injected before (to the Left) of dictionary values in JSON and JSONC",
 	"patterns": [
 		{
 			"include": "#expressionstring"
@@ -41,6 +41,9 @@
 				},
 				{
 					"include": "#number"
+				},
+				{
+					"include": "#functioncall"
 				}
 			]
 		},
@@ -75,6 +78,30 @@
 					"match": "['][']"
 				}
 			]
+		},
+		"functioncall": {
+			"name": "meta.function-call.arm-deployment",
+			"begin": "(?x) # turn on extended mode\n (([_$[:alpha:]][_$[:alnum:]]*)(\\.))? # optional namespace+dot\n ([_$[:alpha:]][_$[:alnum:]]*) # function name\n (\\() # open paren",
+			"end": "\\)",
+			"beginCaptures": {
+				"2": {
+					"name": "variable.other.namespace.arm-deployment"
+				},
+				"3": {
+					"name": "punctuation.accessor.arm-deployment"
+				},
+				"4": {
+					"name": "entity.name.function.arm-deployment"
+				},
+				"5": {
+					"name": "meta.brace.round.arm-deployment"
+				}
+			},
+			"endCaptures": {
+				"0": {
+					"name": "meta.brace.round.arm-deployment"
+				}
+			}
 		}
 	},
 	"scopeName": "source.arm-deployment",
