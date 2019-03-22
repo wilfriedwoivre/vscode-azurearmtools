@@ -44,6 +44,9 @@
 				},
 				{
 					"include": "#functioncall"
+				},
+				{
+					"include": "#propertyaccess"
 				}
 			]
 		},
@@ -81,24 +84,29 @@
 		},
 		"functioncall": {
 			"name": "meta.function-call.arm-deployment",
-			"begin": "(?x) \\s* ((?<namespace>[_$[:alpha:]][_$[:alnum:]]*) \\s* (\\.) \\s*)?   (?<functionname>[_$[:alpha:]][_$[:alnum:]]*)   \\s* (?<openparen>\\()",
+			"begin": "(?x) \\s*  ((?<namespace>[_$[:alpha:]][_$[:alnum:]]*) \\s* (\\.) \\s*)?   (?<functionname>[_$[:alpha:]][_$[:alnum:]]*)   \\s* (?<openparen>\\()",
 			"end": "\\)",
 			"beginCaptures": {
 				"2": {
+					"$comment": "namespace (optional), meaning it's a user function",
 					"name": "variable.other.namespace.arm-deployment"
 				},
 				"3": {
+					"$comment": "dot (needed if there's a namespace)",
 					"name": "punctuation.accessor.arm-deployment"
 				},
 				"4": {
+					"$comment": "function name",
 					"name": "entity.name.function.arm-deployment"
 				},
 				"5": {
+					"$comment": "open paren",
 					"name": "meta.brace.round.arm-deployment"
 				}
 			},
 			"endCaptures": {
 				"0": {
+					"$comment": "closing paren",
 					"name": "meta.brace.round.arm-deployment"
 				}
 			},
@@ -125,6 +133,10 @@
 					"name": "invalid.illegal.expected-comma.arm-deployment"
 				}
 			]
+		},
+		"propertyaccess": {
+			"match": "(?x) \\s* (?<=\\)) (?<propaccess>\\.[_$[:alpha:]][_$[:alnum:]]*)?",
+			"name": "variable.other.property-access.arm-deployment"
 		}
 	},
 	"scopeName": "source.arm-deployment",
