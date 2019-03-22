@@ -81,7 +81,7 @@
 		},
 		"functioncall": {
 			"name": "meta.function-call.arm-deployment",
-			"begin": "(?x) #extended mode\n \\s* ((?<namespace>[_$[:alpha:]][_$[:alnum:]]*) \\s* (\\.) \\s*)?   (?<functionname>[_$[:alpha:]][_$[:alnum:]]*)   \\s* (?<openparen>\\()",
+			"begin": "(?x) \\s* ((?<namespace>[_$[:alpha:]][_$[:alnum:]]*) \\s* (\\.) \\s*)?   (?<functionname>[_$[:alpha:]][_$[:alnum:]]*)   \\s* (?<openparen>\\()",
 			"end": "\\)",
 			"beginCaptures": {
 				"2": {

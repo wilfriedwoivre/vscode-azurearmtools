@@ -1,0 +1,6 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "$TEST": "[my.var('array0')[1]]",
+    "$TEST": "[my.var('array0')[copyIndex()]]",
+    "$TEST": "[concat('a/', my.param('b'))]"
+}
