@@ -1,5 +1,0 @@
-// asdf is this valid?
-{
-    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
-    "$TEST": "[ [1, 2]]"
-}
