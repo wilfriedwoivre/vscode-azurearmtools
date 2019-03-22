@@ -44,9 +44,6 @@
 				},
 				{
 					"include": "#functioncall"
-				},
-				{
-					"include": "#propertyaccess"
 				}
 			]
 		},
@@ -133,10 +130,6 @@
 					"name": "invalid.illegal.expected-comma.arm-deployment"
 				}
 			]
-		},
-		"propertyaccess": {
-			"match": "(?x) \\s* (?<=\\)) (?<propaccess>\\.[_$[:alpha:]][_$[:alnum:]]*)?",
-			"name": "variable.other.property-access.arm-deployment"
 		}
 	},
 	"scopeName": "source.arm-deployment",
