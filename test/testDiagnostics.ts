@@ -5,14 +5,14 @@
 // Support for testing diagnostics in vscode
 
 // tslint:disable:no-unused-expression no-console no-string-based-set-timeout
-// tslint:disable:insecure-random max-func-body-length radix prefer-template
+// tslint:disable:max-func-body-length radix prefer-template
 
 import * as assert from "assert";
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import { commands, Diagnostic, DiagnosticSeverity, Disposable, languages, window, workspace } from "vscode";
 import { diagnosticsCompleteMessage, diagnosticsSource } from "../extension.bundle";
+import { getTempFilePath } from "./getTempFilePath";
 
 const diagnosticsTimeout = 20000;
 const testFolder = path.join(__dirname, '..', '..', 'test', 'templates');
@@ -84,12 +84,7 @@ async function getDiagnosticsForTemplate(templateContentsOrFileName: string | { 
     }
 
     if (!filePath) {
-        assert(typeof templateContents === 'string');
-        let tempName = '';
-        for (let i = 0; i < 10; ++i) {
-            tempName += String.fromCharCode(64 + Math.random() * 26);
-        }
-        filePath = path.join(os.tmpdir(), `${tempName}.jsonc`);
+        filePath = getTempFilePath();
         fs.writeFileSync(filePath, templateContents);
         fileToDelete = filePath;
     }
