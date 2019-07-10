@@ -39,6 +39,7 @@ interface IExpressionMetadata {
 }
 
 function test(): cp.ChildProcess {
+    env.MOCHA_grep = "bug"; // Only run the 'bug' suite/test
     env.DEBUGTELEMETRY = '1';
     env.CODE_TESTS_PATH = path.join(__dirname, 'dist/test');
     env.MOCHA_timeout = "4000";

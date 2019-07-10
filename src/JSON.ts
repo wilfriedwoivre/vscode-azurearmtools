@@ -972,8 +972,13 @@ export class ParseResult {
  * Parse the provided JSON string.
  */
 export function parse(stringValue: string): ParseResult {
-    assert(stringValue !== null);
-    assert(stringValue !== undefined);
+    console.log("asdf 10");
+    assert(false);
+    console.log("asdf 11");
+    //assert(stringValue !== null);
+    console.log("asdf 12");
+    //assert(stringValue !== undefined);
+    console.log("asdf 13");
 
     const tokens: Token[] = [];
     const jt = new Tokenizer(stringValue);
