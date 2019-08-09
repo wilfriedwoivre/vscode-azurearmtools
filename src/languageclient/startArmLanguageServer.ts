@@ -7,7 +7,7 @@
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import { ExtensionContext, workspace } from 'vscode';
-import { callWithTelemetryAndErrorHandlingSync, parseError, TelemetryProperties } from 'vscode-azureextensionui';
+import { callWithTelemetryAndErrorHandlingSync, IActionContext, parseError, TelemetryProperties } from 'vscode-azureextensionui';
 import { Message } from 'vscode-jsonrpc';
 import { CloseAction, ErrorAction, ErrorHandler, LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies, initializeDotnetAcquire } from '../acquisition/dotnetAcquisition';
@@ -27,7 +27,7 @@ export async function startArmLanguageServer(context: ExtensionContext): Promise
     let dotnetExePath: string;
     let serverDllPath: string;
 
-    await callWithTelemetryAndErrorHandlingSync('Find Language Server', () => {
+    await callWithTelemetryAndErrorHandlingSync('Find Language Server', (actionContext: IActionContext) => {
         let serverDllPathSetting: string | undefined = workspace.getConfiguration('armTools').get<string | undefined>('languageServer.path');
 
         if (typeof serverDllPathSetting !== 'string' || serverDllPathSetting === '') {
@@ -41,6 +41,8 @@ export async function startArmLanguageServer(context: ExtensionContext): Promise
             serverDllPath = path.join(serverFolderPath, languageServerDllName);
         } else {
             serverDllPath = serverDllPathSetting;
+            actionContext.telemetry.properties.isCustomLanguageServerPath = 'true';
+
 
             if (fse.statSync(serverDllPathSetting).isDirectory()) {
                 serverDllPath = path.join(serverDllPathSetting, languageServerDllName);
@@ -52,10 +54,18 @@ export async function startArmLanguageServer(context: ExtensionContext): Promise
         }
     });
 
-    await callWithTelemetryAndErrorHandlingSync('Acquire Dotnet', async () => {
+    await callWithTelemetryAndErrorHandlingSync('Acquire Dotnet', async (actionContext: IActionContext) => {
         initializeDotnetAcquire(ext.context, ext.extensionId);
 
         dotnetExePath = await dotnetAcquire(dotnetVersion);
+
+        try {
+            // E.g. "c:\Users\<user>\AppData\Roaming\Code - Insiders\User\globalStorage\msazurermtools.azurerm-vscode-tools\.dotnet\2.2.5\dotnet.exe"
+            let dotnetVersion = dotnetExePath.match(/dotnet[\\/]([^\\/]+)[\\/]/)[1];
+            actionContext.telemetry.properties.dotnetVersionInstalled = dotnetVersion;
+        } catch (error) {
+        }
+
         if (!(await fse.pathExists(dotnetExePath)) || !(await fse.stat(dotnetExePath)).isFile) {
             throw new Error(`Unexpected path returned for .net core: ${dotnetExePath}`);
         }
