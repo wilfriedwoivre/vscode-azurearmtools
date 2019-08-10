@@ -11,12 +11,12 @@ import { callWithTelemetryAndErrorHandlingSync, IActionContext, parseError, Tele
 import { Message } from 'vscode-jsonrpc';
 import { CloseAction, ErrorAction, ErrorHandler, LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies, initializeDotnetAcquire } from '../acquisition/dotnetAcquisition';
-import { armDeploymentLanguageId } from '../constants';
+import { armDeploymentLanguageId, assetsPath } from '../constants';
 import { ext } from '../extensionVariables';
 import { armDeploymentDocumentSelector } from '../supported';
 
 const languageServerName = 'ARM Language Server';
-const languageServerFolderName = 'languageServerBin';
+const languageServerFolderName = 'languageServer';
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
 let serverStartMs: number;
 const languageServerErrorTelemId = 'Language Server Error';
@@ -55,7 +55,8 @@ export async function startArmLanguageServer(context: ExtensionContext): Promise
     });
 
     await callWithTelemetryAndErrorHandlingSync('Acquire Dotnet', async (actionContext: IActionContext) => {
-        initializeDotnetAcquire(ext.context, ext.extensionId);
+        let scriptsPath = path.join(assetsPath, 'scripts');
+        initializeDotnetAcquire(ext.context, ext.extensionId, scriptsPath);
 
         dotnetExePath = await dotnetAcquire(dotnetVersion);
 

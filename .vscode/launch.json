@@ -39,7 +39,8 @@
             "preLaunchTask": "npm: webpack",
             "env": {
                 "DEBUGTELEMETRY": "1",
-                "NODE_DEBUG": ""
+                "NODE_DEBUG": "",
+                "DEBUG_WEBPACK": "1"
             }
         },
         {

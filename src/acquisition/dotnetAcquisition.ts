@@ -17,7 +17,7 @@ import { StatusBarObserver } from './StatusBarObserver';
 
 let acquisitionWorker: DotnetCoreAcquisitionWorker;
 
-export function initializeDotnetAcquire(context: vscode.ExtensionContext, parentExtensionId: string): void { //asdf no reg commands, asdf no new output channel
+export function initializeDotnetAcquire(context: vscode.ExtensionContext, parentExtensionId: string, scriptsPath: string): void { //asdf no reg commands, asdf no new output channel
     const extension = vscode.extensions.getExtension(parentExtensionId);
 
     if (!extension) {
@@ -40,9 +40,9 @@ export function initializeDotnetAcquire(context: vscode.ExtensionContext, parent
         fs.mkdirSync(context.globalStoragePath);
     }
     acquisitionWorker = new DotnetCoreAcquisitionWorker(
-        context.extensionPath,
         context.globalStoragePath,
         context.globalState,
+        scriptsPath,
         eventStream);
 }
 

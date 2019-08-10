@@ -7,16 +7,10 @@ import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import rimraf = require('rimraf');
 import { Memento } from 'vscode';
 import { EventStream } from './EventStream';
-import {
-    DotnetAcquisitionCompleted,
-    DotnetAcquisitionInstallError,
-    DotnetAcquisitionScriptError,
-    DotnetAcquisitionStarted,
-    DotnetAcquisitionUnexpectedError,
-} from './EventStreamEvents';
+import { DotnetAcquisitionCompleted, DotnetAcquisitionInstallError, DotnetAcquisitionScriptError, DotnetAcquisitionStarted, DotnetAcquisitionUnexpectedError } from './EventStreamEvents';
+import rimraf = require('rimraf');
 
 export class DotnetCoreAcquisitionWorker {
     private readonly installingVersionsKey = 'installing';
@@ -39,12 +33,12 @@ export class DotnetCoreAcquisitionWorker {
     private acquisitionPromises: { [version: string]: Promise<string> | undefined };
 
     constructor(
-        extensionPath: string,
         private readonly storagePath: string,
         private readonly extensionState: Memento,
+        private readonly scriptsPath: string,
         private readonly eventStream: EventStream) {
         const script = os.platform() === 'win32' ? 'dotnet-install.cmd' : 'dotnet-install.sh';
-        this.scriptPath = path.join(extensionPath, 'node_modules', 'dotnetcore-acquisition-library', 'scripts', script);
+        this.scriptPath = path.join(this.scriptsPath, script);
         this.installDir = path.join(this.storagePath, '.dotnet');
         const dotnetExtension = os.platform() === 'win32' ? '.exe' : '';
         this.dotnetExecutable = `dotnet${dotnetExtension}`;
@@ -126,7 +120,7 @@ export class DotnetCoreAcquisitionWorker {
 
         return dotnetPath;
     }
-    
+
     private async uninstall(version: string) {
         delete this.acquisitionPromises[version];
 
