@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Fixes a .vsix built on Windows to have the correct executable bit set for the scripts inside the vsix
+
 rm -r fixed
 rm -r vsix.tmp
 rm azurerm-vscode-tools-0.6.1-alphalangserv.vsix.fixed
