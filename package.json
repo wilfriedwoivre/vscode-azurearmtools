@@ -38,7 +38,8 @@
   "activationEvents": [
     "onLanguage:arm-deployment",
     "onLanguage:json",
-    "onLanguage:jsonc"
+    "onLanguage:jsonc",
+    "onCommand:azurerm-vscode-tools.uninstallDotnet"
   ],
   "contributes": {
     "grammars": [
@@ -106,6 +107,13 @@
           ".arm"
         ],
         "$extensions.TODO": "asdf - need at least one explicit extension for tests"
+      }
+    ],
+    "commands": [
+      {
+        "category": "ARM Tools",
+        "title": "Uninstall dotnet core for this extension",
+        "command": "azurerm-vscode-tools.uninstallDotnet"
       }
     ]
   },

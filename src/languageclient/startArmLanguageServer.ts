@@ -10,8 +10,8 @@ import { ExtensionContext, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandlingSync, IActionContext, parseError, TelemetryProperties } from 'vscode-azureextensionui';
 import { Message } from 'vscode-jsonrpc';
 import { CloseAction, ErrorAction, ErrorHandler, LanguageClient, LanguageClientOptions, ServerOptions } from 'vscode-languageclient';
-import { dotnetAcquire, ensureDotnetDependencies, initializeDotnetAcquire } from '../acquisition/dotnetAcquisition';
-import { armDeploymentLanguageId, assetsPath } from '../constants';
+import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
+import { armDeploymentLanguageId } from '../constants';
 import { ext } from '../extensionVariables';
 import { armDeploymentDocumentSelector } from '../supported';
 
@@ -55,20 +55,18 @@ export async function startArmLanguageServer(context: ExtensionContext): Promise
     });
 
     await callWithTelemetryAndErrorHandlingSync('Acquire Dotnet', async (actionContext: IActionContext) => {
-        let scriptsPath = path.join(assetsPath, 'scripts');
-        initializeDotnetAcquire(ext.context, ext.extensionId, scriptsPath);
-
         dotnetExePath = await dotnetAcquire(dotnetVersion);
+        if (!(await fse.pathExists(dotnetExePath)) || !(await fse.stat(dotnetExePath)).isFile) {
+            throw new Error(`Unexpected path returned for .net core: ${dotnetExePath}`);
+        }
+        ext.outputChannel.appendLine(`Dotnet core path: ${dotnetExePath}`);
 
         try {
+            // Telemetry
             // E.g. "c:\Users\<user>\AppData\Roaming\Code - Insiders\User\globalStorage\msazurermtools.azurerm-vscode-tools\.dotnet\2.2.5\dotnet.exe"
             let dotnetVersion = dotnetExePath.match(/dotnet[\\/]([^\\/]+)[\\/]/)[1];
             actionContext.telemetry.properties.dotnetVersionInstalled = dotnetVersion;
         } catch (error) {
-        }
-
-        if (!(await fse.pathExists(dotnetExePath)) || !(await fse.stat(dotnetExePath)).isFile) {
-            throw new Error(`Unexpected path returned for .net core: ${dotnetExePath}`);
         }
 
         // Attempt to determine by running a .net app whether additional runtime dependencies are missing on the machine (Linux only),

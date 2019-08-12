@@ -6,7 +6,10 @@
 import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as os from 'os';
+import * as path from 'path';
 import * as vscode from 'vscode';
+import { parseError } from 'vscode-azureextensionui';
+import { assetsPath } from '../constants';
 import { ext } from '../extensionVariables';
 import { DotnetCoreAcquisitionWorker } from './DotnetCoreAcquisitionWorker';
 import { DotnetCoreDependencyInstaller } from './DotnetCoreDependencyInstaller';
@@ -16,8 +19,19 @@ import { OutputChannelObserver } from './OutputChannelObserver';
 import { StatusBarObserver } from './StatusBarObserver';
 
 let acquisitionWorker: DotnetCoreAcquisitionWorker;
+let initialized = false;
 
-export function initializeDotnetAcquire(context: vscode.ExtensionContext, parentExtensionId: string, scriptsPath: string): void { //asdf no reg commands, asdf no new output channel
+function initializeDotnetAcquire(): void { //asdf no reg commands, asdf no new output channel
+    if (initialized) {
+        return;
+    }
+
+    console.log("Initializing dotnet acquire...");
+
+    let context = ext.context;
+    let parentExtensionId = ext.extensionId;
+    let scriptsPath = path.join(assetsPath, 'scripts');
+
     const extension = vscode.extensions.getExtension(parentExtensionId);
 
     if (!extension) {
@@ -47,6 +61,8 @@ export function initializeDotnetAcquire(context: vscode.ExtensionContext, parent
 }
 
 export async function dotnetAcquire(version: string): Promise<string> {
+    initializeDotnetAcquire();
+
     if (!version || version === 'latest') {
         throw new Error(`Cannot acquire .NET Core version "${version}". Please provide a valid version.`);
     }
@@ -54,6 +70,8 @@ export async function dotnetAcquire(version: string): Promise<string> {
 }
 
 export async function ensureDotnetDependencies(dotnetPath: string, args: string[]): Promise<void> {
+    initializeDotnetAcquire();
+
     if (os.platform() !== 'linux') {
         // We can't handle installing dependencies for anything other than Linux
         return;
@@ -66,4 +84,23 @@ export async function ensureDotnetDependencies(dotnetPath: string, args: string[
     }
 
     // TODO: Handle cases where .NET failed for unknown reasons.
+}
+
+export async function uninstallDotnet(): Promise<void> {
+    initializeDotnetAcquire();
+
+    ext.outputChannel.appendLine("Uninstalling dotnet core for extension...");
+    try {
+        await acquisitionWorker.uninstallAll();
+    }
+    catch (error) {
+        let message = parseError(error).message;
+        if (message.includes('EPERM')) {
+            error = new Error(`dotnet core may be in use, please restart VS Code and try again. ${message}`);
+        }
+
+        throw error;
+    }
+
+    ext.outputChannel.appendLine("Done.");
 }
