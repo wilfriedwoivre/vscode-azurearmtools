@@ -26,6 +26,7 @@ function initializeDotnetAcquire(): void { //asdf no reg commands, asdf no new o
         return;
     }
 
+    // tslint:disable-next-line:no-console
     console.log("Initializing dotnet acquire...");
 
     let context = ext.context;
@@ -38,7 +39,6 @@ function initializeDotnetAcquire(): void { //asdf no reg commands, asdf no new o
         throw new Error(`Could not resolve dotnet acquisition extension '${parentExtensionId}' location`);
     }
 
-    //const outputChannel = vscode.window.createOutputChannel('.NET Core Tooling');
     const eventStreamObservers: IEventStreamObserver[] =
         [
             new StatusBarObserver(vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, Number.MIN_VALUE)),
@@ -50,7 +50,7 @@ function initializeDotnetAcquire(): void { //asdf no reg commands, asdf no new o
         eventStream.subscribe(event => observer.post(event));
     }
 
-    if (!fs.existsSync(context.globalStoragePath)) { //asdf?
+    if (!fs.existsSync(context.globalStoragePath)) {
         fs.mkdirSync(context.globalStoragePath);
     }
     acquisitionWorker = new DotnetCoreAcquisitionWorker(
@@ -69,21 +69,23 @@ export async function dotnetAcquire(version: string): Promise<string> {
     return acquisitionWorker.acquire(version);
 }
 
-export async function ensureDotnetDependencies(dotnetPath: string, args: string[]): Promise<void> {
+export async function ensureDotnetDependencies(dotnetPath: string, args: string[], telemetryProperties: { [key: string]: string }): Promise<void> {
     initializeDotnetAcquire();
 
     if (os.platform() !== 'linux') {
         // We can't handle installing dependencies for anything other than Linux
+        telemetryProperties.skipped = "true";
         return;
     }
 
     const result = cp.spawnSync(dotnetPath, args);
-    const installer = new DotnetCoreDependencyInstaller();
+    const installer = new DotnetCoreDependencyInstaller(ext.outputChannel);
     if (installer.signalIndicatesMissingLinuxDependencies(result.signal)) {
-        await installer.promptLinuxDependencyInstall('Failed to run .NET tooling.');
+        telemetryProperties.signalIndicatesMissing = "true";
+        await installer.promptLinuxDependencyInstall(telemetryProperties, 'Failed to successfully run language server.');
+    } else {
+        telemetryProperties.signalIndicatesMissing = "false";
     }
-
-    // TODO: Handle cases where .NET failed for unknown reasons.
 }
 
 export async function uninstallDotnet(): Promise<void> {
@@ -92,8 +94,7 @@ export async function uninstallDotnet(): Promise<void> {
     ext.outputChannel.appendLine("Uninstalling dotnet core for extension...");
     try {
         await acquisitionWorker.uninstallAll();
-    }
-    catch (error) {
+    } catch (error) {
         let message = parseError(error).message;
         if (message.includes('EPERM')) {
             error = new Error(`dotnet core may be in use, please restart VS Code and try again. ${message}`);

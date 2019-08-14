@@ -1,13 +1,24 @@
+/* --------------------------------------------------------------------------------------------
+ * Copyright (c) Microsoft Corporation. All rights reserved.
+ * Licensed under the MIT License. See License.txt in the project root for license information.
+ * ------------------------------------------------------------------------------------------ */
+
 import * as cp from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { which } from 'shelljs';
 import * as vscode from 'vscode';
 
+// tslint:disable: prefer-template
+
 const moreInfoUrl = 'https://aka.ms/dotnet-linux-prereqs';
 
 export class DotnetCoreDependencyInstaller {
     private readonly platform = process.platform;
+
+    public constructor(private _outputChannel: vscode.OutputChannel) {
+
+    }
 
     public signalIndicatesMissingLinuxDependencies(signal: string | undefined | null): boolean {
         // If the dotnet does a SIGABRT on Linux this can mean that there are missing dependencies.
@@ -29,18 +40,20 @@ export class DotnetCoreDependencyInstaller {
         return false;
     }
 
-    public async installLinuxDependencies(additionalLibs: any = {}, skipDotNetCore: boolean = false): Promise<Number> {
+    public async installLinuxDependencies(additionalLibs: {} = {}, skipDotNetCore: boolean = false): Promise<Number> {
         const scriptRoot = path.join(__dirname, '..', 'scripts');
         const shellCommand = this.getShellCommand();
 
         // Determine the distro
         const result = cp.spawnSync(shellCommand, [path.join(scriptRoot, 'determine-linux-distro.sh')]);
+        // tslint:disable-next-line: strict-boolean-expressions
         if (!!result.status) {
-            console.log('Failed to determine distro. Exit code: ' + result.status);
+            // tslint:disable-next-line: restrict-plus-operands
+            this._outputChannel.appendLine('Failed to determine distro. Exit code: ' + result.status);
             return result.status;
         }
         const distro = result.stdout.toString().trim();
-        console.log('Found distro ' + distro);
+        this._outputChannel.appendLine('Found distro ' + distro);
         const additionalLibsKey = distro.toLowerCase(); // Always use lower case for this
 
         // Run the installer for the distro passing in any additional libs for it
@@ -54,13 +67,15 @@ export class DotnetCoreDependencyInstaller {
                 moreInfoUrl]);
     }
 
-    public async promptLinuxDependencyInstall(message: string, additionalLibs: any = {}, skipDotNetCore: boolean = false): Promise<boolean> {
+    public async promptLinuxDependencyInstall(telemetryProperties: { [key: string]: string }, failureMessage: string, additionalLibs: unknown = {}, skipDotNetCore: boolean = false): Promise<boolean> {
+        // tslint:disable-next-line:no-constant-condition
         while (true) {
             const response = await vscode.window.showErrorMessage(
-                message + ' You may be missing key Linux libraries. Install them now?',
+                failureMessage + ' You may be missing key Linux libraries. Install them now?',
                 'More Info',
                 'Install',
                 'Cancel');
+            telemetryProperties.response = response;
 
             if (response === 'More Info') {
                 // Don't return, user has to explicitly hit "cancel"
@@ -108,9 +123,12 @@ export class DotnetCoreDependencyInstaller {
     }
 
     public async executeCommandInTerminal(name: string, command: string, args: string[] = [], promptAfterRun: boolean = false): Promise<number> {
+        // tslint:disable-next-line:typedef
         return await new Promise<number>((resolve, reject) => {
             const fullCommand = `"${command}" ${(args.length > 0 ? ' "' + args.join('" "') + '"' : '')}`;
+            // tslint:disable-next-line: restrict-plus-operands insecure-random
             const exitCodeFile = path.join(__dirname, '..', 'terminal-exit-code-' + Math.floor(Math.random() * 1000000));
+            // tslint:disable-next-line:prefer-array-literal
             const commandList = new Array<string>();
             if (this.platform === 'win32') {
                 // Note that "|| echo %ERRORLEVEL% >"" in this command sequence is a hack to get the exit code
@@ -156,9 +174,10 @@ export class DotnetCoreDependencyInstaller {
                             if (exitFile) {
                                 const exitCode = parseInt(exitFile, 10);
                                 if (exitCode === 0) {
+                                    // NOOP
                                 } else {
                                     // Possible that this is an expected exit code, so just a warning
-                                    console.log('Non-zero exit code detected.');
+                                    this._outputChannel.appendLine(`Non-zero exit code detected: ${exitCode}`);
                                 }
                                 resolve(exitCode);
                             } else {
