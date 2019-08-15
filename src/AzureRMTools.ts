@@ -18,7 +18,7 @@ import { Histogram } from "./Histogram";
 import * as Hover from "./Hover";
 import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import * as language from "./Language";
-import { startArmLanguageServer } from "./languageclient/startArmLanguageServer";
+import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
 import { PositionContext } from "./PositionContext";
 import * as Reference from "./Reference";
 import { Stopwatch } from "./Stopwatch";
@@ -76,7 +76,10 @@ export class AzureRMTools {
         context.subscriptions.push(vscode.window.registerTreeDataProvider("arm-deployment-outline", jsonOutline));
 
         registerCommand("azurerm-vscode-tools.treeview.goto", (_actionContext: IActionContext, range: vscode.Range) => jsonOutline.goToDefinition(range));
-        registerCommand('azurerm-vscode-tools.uninstallDotnet', async () => await uninstallDotnet());
+        registerCommand('azurerm-vscode-tools.uninstallDotnet', async () => {
+            await stopArmLanguageServer();
+            await uninstallDotnet();
+        });
 
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
 

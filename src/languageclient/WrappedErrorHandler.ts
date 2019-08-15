@@ -7,10 +7,19 @@ import { parseError, TelemetryProperties } from 'vscode-azureextensionui';
 import { Message } from 'vscode-jsonrpc';
 import { CloseAction, ErrorAction, ErrorHandler } from 'vscode-languageclient';
 import { ext } from '../extensionVariables';
-import { languageServerErrorTelemId, serverStartMs } from './startArmLanguageServer';
+import { serverStartMs } from './startArmLanguageServer';
+
+const languageServerErrorTelemId = 'Language Server Error';
 
 // tslint:disable-next-line:no-suspicious-comment
 // TODO: test
+
+/**
+ * Wraps the default error handler for the language server client to send telemetry for the error
+ * events.
+ *
+ * (The default error handler causes the server to shut down after 3 errors or 5 crashes.)
+ */
 export class WrappedErrorHandler implements ErrorHandler {
     constructor(private _handler: ErrorHandler) {
     }
