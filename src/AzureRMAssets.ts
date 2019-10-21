@@ -135,7 +135,7 @@ export class BuiltinFunctionMetadata implements IFunctionMetadata, INamedDefinit
     public get usageInfo(): IUsageInfo {
         return {
             usage: this.usage,
-            friendlyType: "function", //asdf?
+            friendlyType: "function",
             description: this.description
         };
     }
