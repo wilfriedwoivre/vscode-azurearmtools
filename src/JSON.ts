@@ -12,6 +12,7 @@
 // Because the JSON/ARM parsers catch these errors, it doesn't make too much difference for the end user
 //   so might not be worth fixing.
 
+import * as os from 'os';
 import { CachedValue } from "./CachedValue";
 import { CaseInsensitiveMap } from "./CaseInsensitiveMap";
 import { assert } from "./fixed_assert";
@@ -558,6 +559,13 @@ export abstract class Value {
     public abstract get valueKind(): ValueKind;
 
     /**
+     * Format into JSON format
+     * @param currentIndent Current indent level
+     * @param indent Additional indent per level
+     */
+    public abstract format(currentIndent: number, indent: number): string;
+
+    /**
      * The span that this Value covers (character start index through after the character end index).
      */
     public get span(): language.Span {
@@ -580,10 +588,10 @@ export abstract class Value {
     public abstract toFriendlyString(): string;
 
     /**
-     * Convenient way of seeing what this object represents in the debugger, shouldn't be used for production code
+     * Convenient way of seeing what this object represents in the debugger, shouldn't be used in production code
      */
     public get __debugDisplay(): string {
-        return this.toString();
+        return this.format(0, 2);
     }
 }
 
@@ -679,11 +687,13 @@ export class ObjectValue extends Value {
         return "(object)";
     }
 
-    public get __debugDisplay(): string {
-        // tslint:disable-next-line: prefer-template
-        return "{" +
-            this.properties.map(pv => pv.nameValue.toString() + ':' + (pv.value instanceof Value ? pv.value.__debugDisplay : String(pv.value))).join(",")
-            + "}";
+    public format(currentIndent: number, indent: number): string {
+        const spaces = ' '.repeat(currentIndent);
+
+        // tslint:disable-next-line:prefer-template
+        return `${spaces}{${os.EOL}` +
+            this.properties.map(pv => pv.format(currentIndent + indent, indent)).join(`,${os.EOL}`)
+            + `${spaces}}`;
     }
 }
 
@@ -721,9 +731,11 @@ export class Property extends Value {
         return "(property)";
     }
 
-    public get __debugDisplay(): string {
-        // tslint:disable-next-line: prefer-template
-        return this._name.toString() + ":" + (this.value instanceof Value ? this.value.__debugDisplay : String(this.value));
+    public format(currentIndent: number, indent: number): string {
+        // tslint:disable-next-line:prefer-template
+        return this._name.quotedValue
+            + ": "
+            + (this.value === undefined ? "undefined" : this.value.format(0, indent));
     }
 }
 
@@ -769,11 +781,13 @@ export class ArrayValue extends Value {
         return "(array)";
     }
 
-    public get __debugDisplay(): string {
-        // tslint:disable-next-line: prefer-template
-        return "[" +
-            this.elements.map(e => e.__debugDisplay).join(",")
-            + "]";
+    public format(currentIndent: number, indent: number): string {
+        const spaces: string = ' '.repeat(currentIndent);
+
+        // tslint:disable-next-line:prefer-template
+        return `${spaces}[${os.EOL}` +
+            this.elements.map(e => `${e.format(currentIndent + indent, indent)}`).join(`,${os.EOL}`)
+            + `${spaces}]`;
     }
 }
 
@@ -798,6 +812,12 @@ export class BooleanValue extends Value {
 
     public toString(): string {
         return this._value.toString();
+    }
+
+    public format(currentIndent: number, _indent: number): string {
+        const spaces: string = ' '.repeat(currentIndent);
+
+        return `${spaces}${this.toString()}`;
     }
 
     public accept(visitor: Visitor): void {
@@ -840,6 +860,12 @@ export class StringValue extends Value {
         return this._unquotedValue;
     }
 
+    public format(currentIndent: number, _indent: number): string {
+        const spaces: string = ' '.repeat(currentIndent);
+
+        return `${spaces}${this.quotedValue}`;
+    }
+
     public accept(visitor: Visitor): void {
         visitor.visitStringValue(this);
     }
@@ -859,6 +885,12 @@ export class NumberValue extends Value {
 
     public get valueKind(): ValueKind {
         return ValueKind.NumberValue;
+    }
+
+    public format(currentIndent: number, _indent: number): string {
+        const spaces: string = ' '.repeat(currentIndent);
+
+        return `${spaces}${this.toString()}`;
     }
 
     public toString(): string {
@@ -888,6 +920,12 @@ export class NullValue extends Value {
 
     public toString(): string {
         return "null";
+    }
+
+    public format(currentIndent: number, _indent: number): string {
+        const spaces: string = ' '.repeat(currentIndent);
+
+        return `${spaces}${this.toString()}`;
     }
 
     public accept(visitor: Visitor): void {
@@ -951,13 +989,15 @@ export class ParseResult {
      */
     public getCharacterIndex(lineIndex: number, columnIndex: number): number {
         // tslint:disable-next-line:max-line-length
-        assert(0 <= lineIndex, `Cannot get a character index for a negative line index (${lineIndex}).`);
+        assert(0 <= lineIndex, `Cannot get a character index; for a negative line {
+            index(${ lineIndex}).`);
         // tslint:disable-next-line:max-line-length
-        assert(lineIndex < this.lineLengths.length, `Cannot get a character index for a line index greater than the number of parsed lines (lineIndex: ${lineIndex}, lines parsed: ${this.lineLengths.length}).`);
+        assert(lineIndex < this.lineLengths.length, `;
+        } Cannot; get; a; character; index; for a line index { greater; } than; the; number; of; parsed; lines(lineIndex: ${ lineIndex}, lines parsed: ${this.lineLengths.length}).`);
         // tslint:disable-next-line:max-line-length
-        assert(0 <= columnIndex, `Cannot get a character index for a negative columnIndex (${columnIndex}).`);
+        assert(0 <= columnIndex, `; Cannot; get; a; character; index; for a negative columnIndex(${columnIndex}).`);
         // tslint:disable-next-line:max-line-length
-        assert(columnIndex <= this.getMaxColumnIndex(lineIndex), `Cannot get a character index for a columnIndex (${columnIndex}) that is greater than the lineIndex's (${lineIndex}) line max column index (${this.getMaxColumnIndex(lineIndex)}).`);
+        assert(columnIndex <= this.getMaxColumnIndex(lineIndex), ` { Cannot; } get; a; character; index; for a columnIndex(${columnIndex}) that { is; } greater; than; the; lineIndex; 's (${lineIndex}) line max column index (${this.getMaxColumnIndex(lineIndex)}).`);
 
         let characterIndex = columnIndex;
         for (let i = 0; i < lineIndex; ++i) {
