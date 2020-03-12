@@ -6,9 +6,9 @@
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
-import { ProgressLocation, window, workspace } from 'vscode';
+import { Diagnostic, ProgressLocation, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
-import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
+import { HandleDiagnosticsSignature, LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
 import { configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageId, languageServerFolderName, languageServerName } from '../constants';
 import { ext } from '../extensionVariables';
@@ -18,6 +18,12 @@ import { WrappedErrorHandler } from './WrappedErrorHandler';
 
 const languageServerDllName = 'Microsoft.ArmLanguageServer.dll';
 const defaultTraceLevel = 'Warning';
+
+export interface IDiagnosticsHandler {
+    handleDiagnostics(uri: Uri, diagnostics: Diagnostic[]): Diagnostic[];
+}
+
+export const diagnosticsHandlers: IDiagnosticsHandler[] = [];
 
 export enum LanguageServerState {
     NotStarted,
@@ -121,6 +127,17 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             revealOutputChannelOn: RevealOutputChannelOn.Error,
             synchronize: {
                 configurationSection: configPrefix
+            },
+            middleware: {
+                handleDiagnostics: (uri: Uri, diagnostics: Diagnostic[], next: HandleDiagnosticsSignature): void => {
+                    const handlers = diagnosticsHandlers.slice();
+
+                    for (let handler of handlers) {
+                        diagnostics = handler.handleDiagnostics(uri, diagnostics);
+                    }
+
+                    next(uri, diagnostics);
+                }
             }
         };
 

@@ -22,7 +22,8 @@ import { IncorrectArgumentsCountIssue } from "./IncorrectArgumentsCountIssue";
 import * as Json from "./JSON";
 import * as language from "./Language";
 import { reloadSchemas } from "./languageclient/reloadSchemas";
-import { startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
+import { diagnosticsHandlers, startArmLanguageServer, stopArmLanguageServer } from "./languageclient/startArmLanguageServer";
+import { ParameterDiagnosticsHandler } from "./ParameterDiagnosticsHandler";
 import { considerQueryingForParameterFile, findMappedParameterFileForTemplate, getFriendlyPathToParameterFile, openParameterFile, selectParameterFile } from "./parameterFiles";
 import { IReferenceSite, PositionContext } from "./PositionContext";
 import { ReferenceList } from "./ReferenceList";
@@ -68,6 +69,7 @@ export class AzureRMTools {
     private readonly _paramsStatusBarItem: vscode.StatusBarItem;
     private _areDeploymentTemplateEventsHookedUp: boolean = false;
     private _diagnosticsVersion: number = 0;
+    private readonly _parameterDiagnosticsHandler = new ParameterDiagnosticsHandler();
 
     // More information can be found about this definition at https://code.visualstudio.com/docs/extensionAPI/vscode-api#DecorationRenderOptions
     // Several of these properties are CSS properties. More information about those can be found at https://www.w3.org/wiki/CSS/Properties
@@ -137,7 +139,7 @@ export class AzureRMTools {
         vscode.window.onDidChangeActiveTextEditor(this.onActiveTextEditorChanged, this, context.subscriptions);
         vscode.workspace.onDidOpenTextDocument(this.onDocumentOpened, this, context.subscriptions);
         vscode.workspace.onDidChangeTextDocument(this.onDocumentChanged, this, context.subscriptions);
-        vscode.workspace.onDidChangeConfiguration(this.updateParameterFileInStatusBar, this, context.subscriptions);
+        vscode.workspace.onDidChangeConfiguration(this.updateCurrentParameterFile, this, context.subscriptions);
 
         this._diagnosticsCollection = vscode.languages.createDiagnosticCollection("azurerm-tools-expressions");
         context.subscriptions.push(this._diagnosticsCollection);
@@ -255,7 +257,7 @@ export class AzureRMTools {
             }
 
             // tslint:disable-next-line: no-floating-promises
-            this.updateParameterFileInStatusBar();
+            this.updateCurrentParameterFile();
         });
     }
 
@@ -517,14 +519,17 @@ export class AzureRMTools {
 
         // tslint:disable-next-line:no-floating-promises // Don't wait
         startArmLanguageServer();
+        diagnosticsHandlers.push(this._parameterDiagnosticsHandler);
     }
 
-    private async updateParameterFileInStatusBar(): Promise<void> {
+    private async updateCurrentParameterFile(): Promise<void> {
         const activeDocument = vscode.window.activeTextEditor?.document;
         if (activeDocument) {
             const deploymentTemplate = this.getDeploymentTemplate(activeDocument);
             if (deploymentTemplate) {
                 const paramFileUri = findMappedParameterFileForTemplate(activeDocument.uri);
+                this._parameterDiagnosticsHandler.currentParameterFile = paramFileUri;
+
                 if (paramFileUri) {
                     const doesParamFileExist = await fse.pathExists(paramFileUri?.fsPath);
                     let text = `Parameters: ${getFriendlyPathToParameterFile(activeDocument.uri, paramFileUri)}`;
@@ -532,6 +537,7 @@ export class AzureRMTools {
                         text += " $(error) Not found";
                     }
                     this._paramsStatusBarItem.text = text;
+
                 } else {
                     this._paramsStatusBarItem.text = "Select Parameter File...";
                 }
@@ -856,7 +862,7 @@ export class AzureRMTools {
             }
 
             // tslint:disable-next-line: no-floating-promises
-            this.updateParameterFileInStatusBar();
+            this.updateCurrentParameterFile();
         });
     }
 
