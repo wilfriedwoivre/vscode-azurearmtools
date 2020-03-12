@@ -5,8 +5,9 @@
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
-import { QuickPickItem, Uri, window } from "vscode";
+import { QuickPickItem, TextEditor, Uri, window } from "vscode";
 import { IActionContext, UserCancelledError } from 'vscode-azureextensionui';
+import { Json } from '../extension.bundle';
 import { CaseInsensitiveMap } from './CaseInsensitiveMap';
 import { DeploymentTemplate } from "./DeploymentTemplate";
 import { ExpressionType } from './ExpressionType';
@@ -15,9 +16,8 @@ import { IParameterDefinition } from './IParameterDefinition';
 import { assertNever } from './util/assertNever';
 import { indentAfterFirstLine, indentMultilineString, removeIndentation } from './util/multilineStrings';
 
-const defaultIndent: number = 4; //asdf
+const defaultIndent: number = 4;
 
-// tslint:disable-next-line:export-name //asdf
 export async function queryCreateParameterFile(actionContext: IActionContext, templateUri: Uri, template: DeploymentTemplate, indent: number = defaultIndent): Promise<Uri> {
     const all = <QuickPickItem>{ label: "All parameters" };
     const required = <QuickPickItem>{ label: "Only required parameters", description: "Uses only parameters that have no default value in the template file" };
@@ -102,6 +102,15 @@ export function createParameterProperty(template: DeploymentTemplate, parameter:
     return `"${parameter.nameValue.unquotedValue}": {
 ${makeIndent(indent)}"value": ${indentAfterFirstLine(value, indent)}
 }`;
+}
+
+export async function addParameterToParameterFile(editor: TextEditor, template: DeploymentTemplate, parameter: IParameterDefinition): Promise<void> {
+    const parameterText: string = createParameterProperty(template, parameter, defaultIndent);
+    appendPropertyTextIntoObject(editor, parameterText);
+}
+
+function appendPropertyTextIntoObject(editor: TextEditor, text: string, jsonObject: Json.ObjectValue) {
+
 }
 
 function getDefaultValueFromType(propType: ExpressionType | undefined, indent: number): string {
