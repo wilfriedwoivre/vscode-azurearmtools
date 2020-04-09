@@ -25,6 +25,7 @@ import * as TLE from "./src/TLE";
 import * as basic from "./src/Tokenizer";
 import * as Utilities from "./src/Utilities";
 
+export { adjustValidationDiagnostics } from "./src/adjustValidationDiagnostics";
 export * from './src/AzureRMAssets';
 export { AzureRMAssets } from "./src/AzureRMAssets";
 export { activateInternal, deactivateInternal } from './src/AzureRMTools'; // Export activate/deactivate for main.js
@@ -72,7 +73,7 @@ export { indentMultilineString, unindentMultilineString as removeIndentation } f
 export * from "./src/util/nonNull";
 export { normalizePath } from "./src/util/normalizePath";
 export * from './src/util/time';
-export { getVSCodePositionFromPosition } from "./src/util/vscodePosition";
+export { getVSCodePositionFromPosition, getVSCodeRangeFromSpan } from "./src/util/vscodePosition";
 export { wrapError } from "./src/util/wrapError";
 export { isVariableDefinition, IVariableDefinition } from "./src/VariableDefinition";
 export { FindReferencesVisitor } from "./src/visitors/FindReferencesVisitor";

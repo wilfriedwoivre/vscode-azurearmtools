@@ -756,9 +756,10 @@ export class AzureRMTools {
         ext.context.subscriptions.push(vscode.languages.registerRenameProvider(templateOrParameterDocumentSelector, renameProvider));
 
         // tslint:disable-next-line:no-floating-promises // Don't wait
-        startArmLanguageServer(async uri => {
-            return await this.getOrReadDeploymentTemplate(uri);
-        });
+        startArmLanguageServer(
+            async uri => await this.getOrReadDeploymentTemplate(uri),
+            this._mapping
+        );
     }
 
     private async updateEditorState(): Promise<void> {

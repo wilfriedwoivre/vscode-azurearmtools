@@ -15,6 +15,7 @@ import { armTemplateLanguageId, configKeys, configPrefix, dotnetVersion, languag
 import { DeploymentTemplate } from '../DeploymentTemplate';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
+import { DeploymentFileMapping } from '../parameterFiles/DeploymentFileMapping';
 import { templateDocumentSelector } from '../supported';
 import { WrappedErrorHandler } from './WrappedErrorHandler';
 
@@ -41,7 +42,10 @@ export async function stopArmLanguageServer(): Promise<void> {
     ext.outputChannel.appendLine("Language server stopped");
 }
 
-export async function startArmLanguageServer(getTemplate: (uri: Uri) => Promise<DeploymentTemplate | undefined>): Promise<void> {
+export async function startArmLanguageServer(
+    getTemplate: (uri: Uri) => Promise<DeploymentTemplate | undefined>,
+    mapping: DeploymentFileMapping
+): Promise<void> {
     window.withProgress(
         {
             location: ProgressLocation.Window,
@@ -54,7 +58,7 @@ export async function startArmLanguageServer(getTemplate: (uri: Uri) => Promise<
                 let serverDllPath: string = findLanguageServer();
                 let dotnetExePath: string = await acquireDotnet(serverDllPath);
                 await ensureDependencies(dotnetExePath, serverDllPath);
-                await startLanguageClient(serverDllPath, dotnetExePath, getTemplate);
+                await startLanguageClient(serverDllPath, dotnetExePath, getTemplate, mapping);
 
                 ext.languageServerState = LanguageServerState.Started;
             } catch (error) {
@@ -75,7 +79,12 @@ async function getLangServerVersion(): Promise<string | undefined> {
     });
 }
 
-export async function startLanguageClient(serverDllPath: string, dotnetExePath: string, getTemplate: (uri: Uri) => Promise<DeploymentTemplate | undefined>): Promise<void> {
+export async function startLanguageClient(
+    serverDllPath: string,
+    dotnetExePath: string,
+    getTemplate: (uri: Uri) => Promise<DeploymentTemplate | undefined>,
+    mapping: DeploymentFileMapping
+): Promise<void> {
     // tslint:disable-next-line: no-suspicious-comment
     // tslint:disable-next-line: max-func-body-length // TODO: Refactor function
     await callWithTelemetryAndErrorHandling('startArmLanguageClient', async (actionContext: IActionContext) => {
@@ -126,7 +135,7 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             },
             middleware: {
                 handleDiagnostics: async (uri: Uri, diagnostics: Diagnostic[], next: HandleDiagnosticsSignature): Promise<void> => {
-                    await adjustValidationDiagnostics(uri, diagnostics, getTemplate);
+                    await adjustValidationDiagnostics(uri, diagnostics, getTemplate, mapping);
                     next(uri, diagnostics);
                 }
             }
