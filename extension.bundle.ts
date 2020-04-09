@@ -34,7 +34,7 @@ export { CaseInsensitiveMap } from "./src/CaseInsensitiveMap";
 export * from "./src/Completion";
 export { CompletionsSpy, ICompletionsSpyResult } from "./src/CompletionsSpy";
 export { IConfiguration } from "./src/Configuration";
-export { armTemplateLanguageId, basePath, configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnosticsSource, isWin32, languageServerStateSource, templateKeys } from "./src/constants";
+export { armTemplateLanguageId, basePath, configKeys, configPrefix, diagnosticsCompletePrefix, expressionsDiagnosticsSource, isWin32, languageServerStateSource, templateKeys, validationDiagnosticsSource } from "./src/constants";
 export { __debugMarkPositionInString, __debugMarkRangeInString, __debugMarkRangeInString as __debugMarkSubstring } from "./src/debugMarkStrings";
 export { DeploymentTemplate } from "./src/DeploymentTemplate";
 export { Duration } from './src/Duration';
