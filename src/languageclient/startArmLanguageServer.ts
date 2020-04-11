@@ -152,17 +152,17 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             ext.reporter.sendTelemetryEvent(telemetryData.eventName, telemetryData.properties);
         });
 
-        // use event system?
-        client.onNotification('arm-template/openLinkedTemplate', (uri: string) => { //asdf new file
-
-        });
-
         try {
             let disposable = client.start();
             ext.context.subscriptions.push(disposable);
 
             await client.onReady();
             ext.languageServerClient = client;
+
+            // asdf constant
+            client.onNotification('arm-template/openLinkedTemplate', async (uri: string) => { //asdf new file
+                await window.showInformationMessage(uri);
+            });
         } catch (error) {
             throw new Error(
                 `${languageServerName}: An error occurred starting the language server.${os.EOL}${os.EOL}${parseError(error).message}`
