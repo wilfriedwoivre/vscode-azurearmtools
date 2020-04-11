@@ -152,6 +152,11 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             ext.reporter.sendTelemetryEvent(telemetryData.eventName, telemetryData.properties);
         });
 
+        // use event system?
+        client.onNotification('arm-template/openLinkedTemplate', (uri: string) => { //asdf new file
+
+        });
+
         try {
             let disposable = client.start();
             ext.context.subscriptions.push(disposable);
