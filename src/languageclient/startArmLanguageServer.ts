@@ -6,7 +6,7 @@
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
-import { ProgressLocation, window, workspace } from 'vscode';
+import { ProgressLocation, Uri, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
@@ -160,8 +160,11 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
             ext.languageServerClient = client;
 
             // asdf constant
-            client.onNotification('arm-template/openLinkedTemplate', async (uri: string) => { //asdf new file
-                await window.showInformationMessage(uri);
+            // asdf with telemetry
+            client.onRequest('arm-template/openLinkedTemplate', async (uri: string) => { //asdf new file
+                const uri2 = Uri.file(uri); //asdf
+                const workspaceFolder = workspace.getWorkspaceFolder(uri2)?.uri;
+                return workspaceFolder?.fsPath ?? '/Users/stephwe/repos/template-examples/linkedTemplate1.json'; //asdf
             });
         } catch (error) {
             throw new Error(
