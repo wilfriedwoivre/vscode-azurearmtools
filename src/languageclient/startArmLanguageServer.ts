@@ -6,11 +6,11 @@
 import * as fse from 'fs-extra';
 import * as os from 'os';
 import * as path from 'path';
-import { ProgressLocation, Uri, window, workspace } from 'vscode';
+import { ProgressLocation, window, workspace } from 'vscode';
 import { callWithTelemetryAndErrorHandling, callWithTelemetryAndErrorHandlingSync, IActionContext, parseError } from 'vscode-azureextensionui';
 import { LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions } from 'vscode-languageclient';
 import { dotnetAcquire, ensureDotnetDependencies } from '../acquisition/dotnetAcquisition';
-import { armTemplateLanguageId, configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName } from '../constants';
+import { armTemplateLanguageId, configKeys, configPrefix, dotnetVersion, languageFriendlyName, languageServerFolderName, languageServerName, notificationKeys } from '../constants';
 import { ext } from '../extensionVariables';
 import { assert } from '../fixed_assert';
 import { templateDocumentSelector } from '../supported';
@@ -161,10 +161,12 @@ export async function startLanguageClient(serverDllPath: string, dotnetExePath: 
 
             // asdf constant
             // asdf with telemetry
-            client.onRequest('arm-template/openLinkedTemplate', async (uri: string) => { //asdf new file
-                const uri2 = Uri.file(uri); //asdf
-                const workspaceFolder = workspace.getWorkspaceFolder(uri2)?.uri;
-                return workspaceFolder?.fsPath ?? '/Users/stephwe/repos/template-examples/linkedTemplate1.json'; //asdf
+            client.onRequest(notificationKeys.openLinkedTemplate, async (uri: string) => { //asdf new file?
+                ext.outputChannel.appendLine(`${notificationKeys.openLinkedTemplate}: ${uri}`);
+                //asdf const workspaceFolder = workspace.getWorkspaceFolder(uri2)?.uri;
+                const localFile = uri.includes('2') ? '/Users/stephwe/repos/template-examples/linkedTemplate2.json' : '/Users/stephwe/repos/template-examples/linkedTemplate1.json'; //asdf
+                ext.outputChannel.appendLine(`... Using local file ${localFile}`);
+                return localFile;
             });
         } catch (error) {
             throw new Error(

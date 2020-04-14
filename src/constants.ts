@@ -44,6 +44,10 @@ export namespace configKeys {
     export const parameterFiles = 'parameterFiles';
 }
 
+export namespace notificationKeys {
+    export const openLinkedTemplate = 'arm-template/openLinkedTemplate';
+}
+
 export namespace globalStateKeys {
     // Set of files to not ask about using the newest schema
     export const dontAskAboutSchemaFiles = 'dontAskAboutSchemaFiles';
