@@ -25,9 +25,10 @@ export class Item {
     public get commitCharacters(): string[] | undefined { return this.options.commitCharacters; }
     public get highPriority(): boolean { return this.options.highPriority ?? false; }
     public get preselect(): boolean { return this.options.preselect ?? false; }
+    private options: any;
 
     constructor(
-        private readonly options: {
+        options: {
             label: string;
             insertText: string;
             span: language.Span;
@@ -57,6 +58,7 @@ export class Item {
             highPriority?: boolean;
             preselect?: boolean;
         }) {
+        this.options = options;
     }
 
     public static fromFunctionMetadata(metadata: IFunctionMetadata, span: language.Span): Item {
@@ -81,7 +83,7 @@ export class Item {
 
     public static fromNamespaceDefinition(namespace: UserFunctionNamespaceDefinition, span: language.Span): Item {
         const label: string = namespace.nameValue.unquotedValue;
-        let insertText: string = `${name}`;
+        let insertText: string = `${label}`;
 
         return new Item({
             label,
