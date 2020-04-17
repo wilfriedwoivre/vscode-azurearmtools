@@ -9,6 +9,7 @@ import * as assert from 'assert';
 import { isNullOrUndefined } from 'util';
 import { DeploymentTemplate } from "../extension.bundle";
 import { IDeploymentParametersFile, IDeploymentTemplate } from "./support/diagnostics";
+import { newActionContext } from './support/newActionContext';
 import { parseParametersWithMarkers, parseTemplate } from "./support/parseTemplate";
 
 const newParamCompletionLabel = `"<new parameter>"`;
@@ -43,7 +44,7 @@ suite("Parameter file completions", () => {
             }
 
             const pc = dp.getContextFromDocumentCharacterIndex(cursorIndex, dt);
-            const completions = pc.getCompletionItems();
+            const completions = pc.getCompletionItems(newActionContext());
 
             const completionNames = completions.map(c => c.label).sort();
             const completionInserts = completions.map(c => c.insertText).sort();

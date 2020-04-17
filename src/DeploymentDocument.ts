@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
+import { IActionContext } from "vscode-azureextensionui";
 import { CachedValue } from "./CachedValue";
 import { __debugMarkPositionInString, __debugMarkRangeInString } from "./debugMarkStrings";
 import { INamedDefinition } from "./INamedDefinition";
@@ -171,7 +172,7 @@ export abstract class DeploymentDocument {
      * @return An array of commands, quick fixes, or refactorings or a thenable of such. The lack of a result can be
      * signaled by returning `undefined`, `null`, or an empty array.
      */
-    public abstract async getCodeActions(associatedDocument: DeploymentDocument | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
+    public abstract async getCodeActions(actionContext: IActionContext, associatedDocument: DeploymentDocument | undefined, range: Range | Selection, context: CodeActionContext): Promise<(Command | CodeAction)[]>;
 
     public abstract getErrors(associatedDocument: DeploymentDocument | undefined): Promise<language.Issue[]>;
 

@@ -4,6 +4,7 @@
 
 // tslint:disable:max-line-length
 
+import { IActionContext } from "vscode-azureextensionui";
 import { AzureRMAssets, BuiltinFunctionMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
@@ -177,7 +178,7 @@ export class TemplatePositionContext extends PositionContext {
         return undefined;
     }
 
-    public getCompletionItems(): Completion.Item[] {
+    public getCompletionItems(actionContext: IActionContext): Completion.Item[] {
         const tleInfo = this.tleInfo;
         if (!tleInfo) {
             // No string at this location
@@ -206,7 +207,7 @@ export class TemplatePositionContext extends PositionContext {
         } else if (tleValue instanceof TLE.FunctionCallValue) {
             assert(this.jsonToken);
             // tslint:disable-next-line:no-non-null-assertion
-            return this.getFunctionCallCompletions(tleValue, this.jsonToken!, tleInfo.tleCharacterIndex, scope);
+            return this.getFunctionCallCompletions(actionContext, tleValue, this.jsonToken!, tleInfo.tleCharacterIndex, scope);
         } else if (tleValue instanceof TLE.StringValue) {
             return this.getStringLiteralCompletions(tleValue, tleInfo.tleCharacterIndex, scope);
         } else if (tleValue instanceof TLE.PropertyAccess) {
@@ -331,7 +332,7 @@ export class TemplatePositionContext extends PositionContext {
      * Return completions when we're anywhere inside a function call expression
      */
     // tslint:disable-next-line: max-func-body-length cyclomatic-complexity // Pretty straightforward, don't think further refactoring is important
-    private getFunctionCallCompletions(tleValue: TLE.FunctionCallValue, parentStringToken: Json.Token, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
+    private getFunctionCallCompletions(actionContext: IActionContext, tleValue: TLE.FunctionCallValue, parentStringToken: Json.Token, tleCharacterIndex: number, scope: TemplateScope): Completion.Item[] {
         assert(tleValue.getSpan().contains(tleCharacterIndex, language.Contains.extended), "Position should be inside the function call, or right after it");
 
         const completions: Completion.Item[] = [];
@@ -416,7 +417,7 @@ export class TemplatePositionContext extends PositionContext {
 
         // If the completion is for 'resourceId' or related function, then in addition
         // to the regular completions, also add special completions for resourceId
-        completions.push(...getResourceIdCompletions(this, tleValue, parentStringToken));
+        completions.push(...getResourceIdCompletions(actionContext, this, tleValue, parentStringToken));
 
         let replaceSpan: language.Span;
         let completionPrefix: string;

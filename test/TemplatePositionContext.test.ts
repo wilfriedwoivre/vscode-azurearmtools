@@ -11,6 +11,7 @@ import { Uri } from "vscode";
 import { Completion, DeploymentTemplate, FunctionSignatureHelp, HoverInfo, IParameterDefinition, IReferenceSite, isVariableDefinition, IVariableDefinition, Json, Language, nonNullValue, TemplatePositionContext, TLE, UserFunctionMetadata, Utilities } from "../extension.bundle";
 import * as jsonTest from "./JSON.test";
 import { IDeploymentTemplate } from "./support/diagnostics";
+import { newActionContext } from "./support/newActionContext";
 import { parseTemplate, parseTemplateWithMarkers } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { allTestDataCompletionNames, allTestDataExpectedCompletions, expectedConcatCompletion, expectedCopyIndexCompletion, expectedPadLeftCompletion, expectedParametersCompletion, expectedProvidersCompletion, expectedReferenceCompletion, expectedReplaceCompletion, expectedResourceGroupCompletion, expectedResourceIdCompletion, expectedSkipCompletion, expectedSplitCompletion, expectedStringCompletion, expectedSubCompletion, expectedSubscriptionCompletion, expectedSubscriptionResourceIdCompletion, expectedSubstringCompletion, expectedVariablesCompletion, parameterCompletion, propertyCompletion, variableCompletion } from "./TestData";
@@ -460,8 +461,8 @@ suite("TemplatePositionContext", () => {
                 const dt = new DeploymentTemplate(documentText, fakeId);
                 const pc: TemplatePositionContext = dt.getContextFromDocumentCharacterIndex(index, undefined);
 
-                let completionItems: Completion.Item[] = pc.getCompletionItems();
-                const completionItems2: Completion.Item[] = pc.getCompletionItems();
+                let completionItems: Completion.Item[] = pc.getCompletionItems(newActionContext());
+                const completionItems2: Completion.Item[] = pc.getCompletionItems(newActionContext());
                 assert.deepStrictEqual(completionItems, completionItems2, "Got different results");
 
                 compareTestableCompletionItems(completionItems, expectedCompletionItems);

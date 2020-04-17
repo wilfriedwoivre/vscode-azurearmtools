@@ -11,6 +11,7 @@ import { ISuiteCallbackContext, ITestCallbackContext } from "mocha";
 import { Uri } from "vscode";
 import { DefinitionKind, DeploymentTemplate, Histogram, INamedDefinition, IncorrectArgumentsCountIssue, IParameterDefinition, IVariableDefinition, Json, Language, ReferenceInVariableDefinitionsVisitor, ReferenceList, TemplateScope, UnrecognizedUserFunctionIssue, UnrecognizedUserNamespaceIssue } from "../extension.bundle";
 import { IDeploymentTemplate, sources, testDiagnostics } from "./support/diagnostics";
+import { newActionContext } from "./support/newActionContext";
 import { parseTemplate } from "./support/parseTemplate";
 import { stringify } from "./support/stringify";
 import { testWithLanguageServer } from "./support/testWithLanguageServer";
@@ -1215,7 +1216,7 @@ suite("DeploymentTemplate", () => {
                     pc.tleInfo;
                     pc.getReferenceSiteInfo(true);
                     pc.getHoverInfo();
-                    pc.getCompletionItems();
+                    pc.getCompletionItems(newActionContext());
                 } catch (err) {
                     throw new Error(`exercisePositionContextAtRandomPointsInTheDoc: Threw at index ${i}:\n${json.slice(i)}<***HERE***>${json.slice(i)}`);
                 }

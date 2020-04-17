@@ -3,6 +3,7 @@
 // ----------------------------------------------------------------------------
 
 import { EOL } from "os";
+import { IActionContext } from "vscode-azureextensionui";
 import * as Completion from "../Completion";
 import { DeploymentTemplate } from "../DeploymentTemplate";
 import * as language from "../Language";
@@ -80,7 +81,7 @@ export class ParametersPositionContext extends PositionContext {
         return refInfo ? this.document.findReferencesToDefinition(refInfo.definition) : undefined;
     }
 
-    public getCompletionItems(): Completion.Item[] {
+    public getCompletionItems(actionContext: IActionContext): Completion.Item[] {
         let completions: Completion.Item[] = [];
 
         if (this.canAddPropertyHere) {

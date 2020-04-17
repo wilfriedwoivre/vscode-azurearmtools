@@ -660,6 +660,8 @@ export class AzureRMTools {
      * Hook up events related to template files (as opposed to plain JSON files). This is only called when
      * actual template files are open, to avoid slowing performance when simple JSON files are opened.
      */
+    // tslint:disable-next-line: no-suspicious-comment
+    // tslint:disable-next-line: max-func-body-length // TODO: refactor
     private ensureDeploymentDocumentEventsHookedUp(): void {
         if (this._areDeploymentTemplateEventsHookedUp) {
             return;
@@ -667,7 +669,6 @@ export class AzureRMTools {
         this._areDeploymentTemplateEventsHookedUp = true;
 
         vscode.window.onDidChangeTextEditorSelection(this.onTextSelectionChanged, this, ext.context.subscriptions);
-
         vscode.workspace.onDidCloseTextDocument(this.onDocumentClosed, this, ext.context.subscriptions);
 
         const hoverProvider: vscode.HoverProvider = {
@@ -960,7 +961,7 @@ export class AzureRMTools {
 
             const pc: PositionContext | undefined = await this.getPositionContext(document, position, cancel);
             if (pc) {
-                const items: Completion.Item[] = pc.getCompletionItems();
+                const items: Completion.Item[] = pc.getCompletionItems(actionContext);
                 const vsCodeItems = items.map(c => toVsCodeCompletionItem(pc.document, c));
                 ext.completionItemsSpy.postCompletionItemsResult(pc.document, items, vsCodeItems);
 
@@ -1170,7 +1171,7 @@ export class AzureRMTools {
 
             const { doc, associatedDoc } = await this.getDeploymentDocAndAssociatedDoc(textDocument, cancel);
             if (doc) {
-                return await doc.getCodeActions(associatedDoc, range, context);
+                return await doc.getCodeActions(actionContext, associatedDoc, range, context);
             }
 
             return [];

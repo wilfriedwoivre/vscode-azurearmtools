@@ -13,19 +13,18 @@ import { IVariableDefinition } from "./VariableDefinition";
  * A completion item in the list of completion suggestions that appear when a user invokes auto-completion (Ctrl + Space).
  */
 export class Item {
-    public get label(): string { return this.options.label; }
-    public get insertText(): string { return this.options.insertText; }
-    public get span(): language.Span { return this.options.span; }
-    public get kind(): CompletionKind { return this.options.kind; }
-    public get detail(): string | undefined { return this.options.detail; }
-    public get documention(): string | MarkdownString | undefined { return this.options.documentation; }
-    public get snippetName(): string | undefined { return this.options.snippetName; }
-    public get additionalEdits(): { span: language.Span; insertText: string }[] | undefined { return this.options.additionalEdits; }
-    public get sortText(): string | undefined { return this.options.sortText; }
-    public get commitCharacters(): string[] | undefined { return this.options.commitCharacters; }
-    public get highPriority(): boolean { return this.options.highPriority ?? false; }
-    public get preselect(): boolean { return this.options.preselect ?? false; }
-    private options: any;
+    public readonly label: string;
+    public readonly insertText: string;
+    public readonly span: language.Span;
+    public readonly kind: CompletionKind;
+    public readonly detail: string | undefined;
+    public readonly documention: string | MarkdownString | undefined;
+    public readonly snippetName: string | undefined;
+    public readonly additionalEdits: { span: language.Span; insertText: string }[] | undefined;
+    public readonly sortText: string | undefined;
+    public readonly commitCharacters: string[] | undefined;
+    public readonly highPriority: boolean;
+    public readonly preselect: boolean;
 
     constructor(
         options: {
@@ -57,8 +56,20 @@ export class Item {
              */
             highPriority?: boolean;
             preselect?: boolean;
-        }) {
-        this.options = options;
+        }
+    ) {
+        this.label = options.label;
+        this.insertText = options.insertText;
+        this.span = options.span;
+        this.kind = options.kind;
+        this.detail = options.detail;
+        this.documention = options.documentation;
+        this.snippetName = options.snippetName;
+        this.additionalEdits = options.additionalEdits;
+        this.sortText = options.sortText;
+        this.commitCharacters = options.commitCharacters;
+        this.highPriority = !!options.highPriority;
+        this.preselect = !!options.preselect;
     }
 
     public static fromFunctionMetadata(metadata: IFunctionMetadata, span: language.Span): Item {

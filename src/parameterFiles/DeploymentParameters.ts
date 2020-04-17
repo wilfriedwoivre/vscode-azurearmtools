@@ -5,6 +5,7 @@
 import * as assert from 'assert';
 import { EOL } from "os";
 import { CodeAction, CodeActionContext, CodeActionKind, Command, Range, Selection, TextEditor, Uri } from "vscode";
+import { IActionContext } from 'vscode-azureextensionui';
 import { CachedValue } from "../CachedValue";
 import { templateKeys } from "../constants";
 import { DeploymentDocument } from "../DeploymentDocument";
@@ -100,12 +101,15 @@ export class DeploymentParameters extends DeploymentDocument {
     }
 
     public async getCodeActions(
+        actionContext: IActionContext,
         associatedDocument: DeploymentDocument | undefined,
         range: Range | Selection,
         context: CodeActionContext
     ): Promise<(Command | CodeAction)[]> {
         assert(!associatedDocument || associatedDocument instanceof DeploymentTemplate, "Associated document is of the wrong type");
         const template: DeploymentTemplate | undefined = <DeploymentTemplate | undefined>associatedDocument;
+
+        actionContext.telemetry.properties.docType = 'parameters';
 
         const actions: (Command | CodeAction)[] = [];
         const parametersProperty = this.parametersProperty;

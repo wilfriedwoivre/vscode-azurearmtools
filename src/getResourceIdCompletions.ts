@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
+import { IActionContext } from "vscode-azureextensionui";
 import { Language } from "../extension.bundle";
 import { AzureRMAssets } from "./AzureRMAssets";
 import * as Completion from "./Completion";
@@ -21,6 +22,7 @@ interface IResourceInfo {
 }
 
 export function getResourceIdCompletions(
+    actionContext: IActionContext,
     pc: TemplatePositionContext,
     funcCall: TLE.FunctionCallValue,
     parentStringToken: Json.Token

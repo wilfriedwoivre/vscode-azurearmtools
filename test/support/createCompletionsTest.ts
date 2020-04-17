@@ -5,6 +5,7 @@
 
 import * as assert from 'assert';
 import { IDeploymentTemplate, IPartialDeploymentTemplate } from "./diagnostics";
+import { newActionContext } from './newActionContext';
 import { parseTemplateWithMarkers } from "./parseTemplate";
 import { stringify } from './stringify';
 import { ITestPreparation, testWithPrep } from './testWithPrep';
@@ -83,7 +84,7 @@ export function createExpressionCompletionsTestEx(
             const { dt, markers: { bang } } = await parseTemplateWithMarkers(template, undefined, { ignoreBang: true });
             assert(bang, "Didn't find ! marker in text");
             const pc = dt.getContextFromDocumentCharacterIndex(bang.index, undefined);
-            const completions = pc.getCompletionItems();
+            const completions = pc.getCompletionItems(newActionContext());
 
             const completionNames = completions.map(c => c.label).sort();
             const completionInserts = completions.map(c => c.insertText).sort();
