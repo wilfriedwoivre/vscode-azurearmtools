@@ -2,7 +2,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { IActionContext } from "vscode-azureextensionui";
 import { Language } from "../extension.bundle";
 import { AzureRMAssets } from "./AzureRMAssets";
 import * as Completion from "./Completion";
@@ -22,7 +21,6 @@ interface IResourceInfo {
 }
 
 export function getResourceIdCompletions(
-    actionContext: IActionContext,
     pc: TemplatePositionContext,
     funcCall: TLE.FunctionCallValue,
     parentStringToken: Json.Token
@@ -55,7 +53,7 @@ function getCompletions(
     if (argIndexAtCursor === 0) {
         // For the first argument, we always provide completions for the list of resource types,
         // since we don't know if the user is adding optional args to the call
-        return getResourceTypeCompletions(pc, resourceIdCompletions, argIndexAtCursor);
+        return getResourceTypeCompletions(funcCall, pc, resourceIdCompletions, argIndexAtCursor);
     }
 
     const allResources = getResourcesInfo(pc.document);
@@ -71,7 +69,7 @@ function getCompletions(
     if (!argWithResourceType) {
         // None of the previous arguments matched a known resource type, so the current argument might
         // be intended to be a resource type.
-        return getResourceTypeCompletions(pc, resourceIdCompletions, argIndexAtCursor);
+        return getResourceTypeCompletions(funcCall, pc, resourceIdCompletions, argIndexAtCursor);
     }
 
     // Only look at resources with that type
@@ -115,7 +113,12 @@ function getCompletions(
                 // vscode tends to preselect one of the regular function completions based
                 // on recently-typed text
                 preselect: true,
-                commitCharacters: [')', ',']
+                commitCharacters: [')', ','],
+                telemetryProperties: {
+                    segment: String(argIndex),
+                    arg: String(argIndexAtCursor),
+                    function: funcCall.fullName
+                }
             }));
         }
     }
@@ -183,6 +186,7 @@ function lowerCaseAndNoWhitespace(s: string | undefined): string | undefined {
  * at the given document index
  */
 function getResourceTypeCompletions(
+    funcCall: TLE.FunctionCallValue,
     pc: TemplatePositionContext,
     resourceIdCompletions: { maxOptionalParameters: number },
     argumentIndex: number
@@ -209,7 +213,12 @@ function getResourceTypeCompletions(
             // vscode tends to preselect one of the regular function completions based
             // on recently-typed text
             preselect: true,
-            commitCharacters: [',']
+            commitCharacters: [','],
+            telemetryProperties: {
+                segment: String(0),
+                arg: String(argumentIndex),
+                function: funcCall.fullName
+            }
         }));
     }
 
@@ -382,7 +391,7 @@ export function splitResourceNameIntoSegments(nameUnquotedValue: string, dt: Dep
             const quotedValue = `"${nameUnquotedValue}"`;
             const parseResult = TLE.Parser.parse(quotedValue, dt.topLevelScope); // asdf scope?
             const expression = parseResult.expression;
-            if (!parseResult.errors.length && expression) {
+            if (parseResult.errors.length > 0 && expression) {
                 // Handle this pattern:
                 // "[concat(expression1, '/' , expression2)]" => [expression1, expression2]
                 if (expression instanceof TLE.FunctionCallValue && expression.isCallToBuiltinWithName('concat')) {
@@ -398,6 +407,7 @@ export function splitResourceNameIntoSegments(nameUnquotedValue: string, dt: Dep
                                     .map(s => `'${s}'`);
                                 rewrittenArgs.push(...refactoredArg);
                             } else {
+                                // tslint:disable-next-line: no-non-null-assertion // checked with .every() above
                                 rewrittenArgs.push(arg!);
                             }
                         }
@@ -457,7 +467,7 @@ function splitStringWithSeparator(s: string, separator: string): string[] {
         result.push(substring);
     }
 
-    return result.filter(s => s.length > 0);
+    return result.filter(s2 => s2.length > 0);
 }
 
 // e.g.

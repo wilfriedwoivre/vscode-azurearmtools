@@ -25,6 +25,7 @@ export class Item {
     public readonly commitCharacters: string[] | undefined;
     public readonly highPriority: boolean;
     public readonly preselect: boolean;
+    public readonly telemetryProperties: { [key: string]: string } | undefined;
 
     constructor(
         options: {
@@ -56,6 +57,10 @@ export class Item {
              */
             highPriority?: boolean;
             preselect?: boolean;
+            /**
+             * Optional additional telemetry properties for if the completion is activated
+             */
+            telemetryProperties?: { [key: string]: string };
         }
     ) {
         this.label = options.label;
@@ -70,6 +75,7 @@ export class Item {
         this.commitCharacters = options.commitCharacters;
         this.highPriority = !!options.highPriority;
         this.preselect = !!options.preselect;
+        this.telemetryProperties = options.telemetryProperties;
     }
 
     public static fromFunctionMetadata(metadata: IFunctionMetadata, span: language.Span): Item {
@@ -86,7 +92,7 @@ export class Item {
                 label: metadata.fullName,
                 insertText,
                 span,
-                kind: CompletionKind.Function,
+                kind: metadata.unqualifiedName === metadata.fullName ? CompletionKind.Function : CompletionKind.UserFunction,
                 detail: `(function) ${metadata.usage}`,
                 documentation: metadata.description
             });
@@ -165,6 +171,7 @@ export enum CompletionKind {
     Variable = "Variable",
     Property = "Property",
     Namespace = "Namespace",
+    UserFunction = "UserFunction",
 
     // Template file completions
     DtResourceIdResType = "DtResourceIdResType", // First arg of resourceId

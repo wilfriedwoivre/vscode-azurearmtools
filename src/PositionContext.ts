@@ -2,7 +2,6 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 // ----------------------------------------------------------------------------
 
-import { IActionContext } from "vscode-azureextensionui";
 import { CachedValue } from "./CachedValue";
 import * as Completion from "./Completion";
 import { __debugMarkPositionInString } from "./debugMarkStrings";
@@ -192,7 +191,7 @@ export abstract class PositionContext {
         return undefined;
     }
 
-    public abstract getCompletionItems(actionContext: IActionContext): Completion.Item[];
+    public abstract getCompletionItems(): Completion.Item[];
 
     public abstract getSignatureHelp(): TLE.FunctionSignatureHelp | undefined;
 }

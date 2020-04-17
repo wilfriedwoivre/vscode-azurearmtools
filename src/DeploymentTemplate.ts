@@ -4,7 +4,6 @@
 
 import * as assert from 'assert';
 import { CodeAction, CodeActionContext, Command, Range, Selection, Uri } from "vscode";
-import { IActionContext } from 'vscode-azureextensionui';
 import { AzureRMAssets, FunctionsMetadata } from "./AzureRMAssets";
 import { CachedValue } from "./CachedValue";
 import { templateKeys } from "./constants";
@@ -529,7 +528,6 @@ export class DeploymentTemplate extends DeploymentDocument {
     }
 
     public async getCodeActions(
-        actionContext: IActionContext,
         associatedDocument: DeploymentDocument | undefined,
         range: Range | Selection,
         context: CodeActionContext
